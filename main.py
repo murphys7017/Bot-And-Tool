@@ -12,10 +12,10 @@ from parrot import Parrot
 
 # Bot名称
 BOT_NAME = 'ALLMIND'
-DATA_DIR = r'D:\Code\MyLongTimeProject\A\py\data'
+DATA_DIR = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data'
 
 
-parrot = Parrot(r"D:\Code\MyLongTimeProject\A\py\data\model\test")
+parrot = Parrot(r"D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\model\test")
 
 
 class MyDispatch(Dispatcher):
