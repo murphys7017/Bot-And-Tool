@@ -44,7 +44,7 @@ class Dispatcher(object):
             self.http_server_path = http_server + '/'
         self.ws_server_path = ws_server
         self.data_path = data_path
-        self.cqCodeBuilder = CqCodeBuilder(self.http_server_path,os.path.join(data_path,'temp'))
+        self.cqCodeBuilder = CqCodeBuilder(self.http_server_path,os.path.join(data_path,'images'))
 
         self.scheduler.start()
         self.init()

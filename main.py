@@ -13,9 +13,9 @@ from parrot import Parrot
 # Bot名称
 BOT_NAME = 'ALLMIND'
 DATA_DIR = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data'
+PARROT_PATH = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\model\test'
 
-
-parrot = Parrot(r"D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\model\test")
+parrot = Parrot(PARROT_PATH)
 
 
 class MyDispatch(Dispatcher):
@@ -91,6 +91,11 @@ def add_scheduled_task(message_info):
     dispatcher.addTask("AddTask", minute='*', second='*/20',)
     return
 
+def get_setu(message_info):
+     local_path = os.path.join(os.path.join(DATA_DIR,'images','ghs'))
+     os.path.join(local_path, random.sample(os.listdir(local_path),1)[0])
+     return ""
+
 @dispatcher.QQMessageHandler(identify_type=['commamd'],identify_value=[["来个色图","来点色图"]])
 def get_some_setu(message_info):
     params = {
@@ -109,9 +114,14 @@ def get_some_setu(message_info):
             params['num'] = line[4:]
     if message_info['message_type'] == 'group':
         params['r18'] = 0
-    response = requests.get('https://api.lolicon.app/setu/v2', params=params).json()
-    response = response['data'][0]['urls']['original']
-    return dispatcher.cqCodeBuilder.imageDoCache(response)
+    
+    if params['tag'] == []:
+        local_path = os.path.join(os.path.join(DATA_DIR,'images','ghs'))
+        return dispatcher.cqCodeBuilder.image(os.path.join(local_path, random.sample(os.listdir(local_path),1)[0]))
+    else:
+        response = requests.get('https://api.lolicon.app/setu/v2', params=params).json()
+        response = response['data'][0]['urls']['original']
+        return dispatcher.cqCodeBuilder.imageDoCache(response)
 
 
 
