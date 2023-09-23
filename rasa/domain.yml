@@ -5,7 +5,7 @@ intents:
 actions:
   - action_get_setu
 
-responses:
+# responses:
   # utter_xxx:
   # - text: "Here is something to cheer you up:"
   #   image: "https://i.imgur.com/nGF1K8f.jpg"

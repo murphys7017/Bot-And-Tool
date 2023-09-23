@@ -45,7 +45,10 @@ dispatcher.startServer()
 
  ## 开发计划
 
-- [ ] 尝试使用rasa做消息分发处理
+- [x] 尝试使用rasa做消息分发处理
+- [ ] 优化rasa的使用
+- [ ] 优化整体配置使用
+- [ ] 添加新功能
 
 # Parrot
 

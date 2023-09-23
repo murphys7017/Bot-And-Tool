@@ -22,7 +22,7 @@ import random
 DATA_DIR = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data'
 cqCodeBuilder = CqCodeBuilder("http://localhost:8882/",os.path.join(DATA_DIR,'images'))
 
-SETU_TAG = ['黑丝','兽耳','萝莉','巨乳','贫乳']
+SETU_TAG = ['黑丝','兽耳','萝莉','巨乳','贫乳','爱丽丝']
 
 class GetSetuAction(Action):
 
