@@ -2,35 +2,13 @@ version: "3.1"
 
 intents:
   - get_setu
-  - greet
-  - goodbye
-  - affirm
-  - deny
-  - mood_great
-  - mood_unhappy
-  - bot_challenge
+actions:
+  - action_get_setu
 
 responses:
-  utter_get_setu:
-  - text: 滚
-  utter_greet:
-  - text: "你好！吃了么？"
-
-  utter_cheer_up:
-  - text: "Here is something to cheer you up:"
-    image: "https://i.imgur.com/nGF1K8f.jpg"
-
-  utter_did_that_help:
-  - text: "Did that help you?"
-
-  utter_happy:
-  - text: "Great, carry on!"
-
-  utter_goodbye:
-  - text: "再见"
-
-  utter_iamabot:
-  - text: "我是一个机器人，你可以叫我小远子"
+  # utter_xxx:
+  # - text: "Here is something to cheer you up:"
+  #   image: "https://i.imgur.com/nGF1K8f.jpg"
 
 session_config:
   session_expiration_time: 60

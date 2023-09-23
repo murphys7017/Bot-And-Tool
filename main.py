@@ -24,22 +24,34 @@ class MyDispatch(Dispatcher):
           super().__init__(bot_name, http_server, ws_server, data_path)
 
      def dispatcherServletEndPoint(self,message_info):
-        return_message = None
+        """重写如果没有匹配上处理器的最终处理方法,启用rasa,更加智能,但是响应变慢,没有具体到某一个方法的权限管理
+        """
+        params = {
+            "sender": message_info['user_id'],
+            "message": message_info['message']
+        }
+        return_message = requests.post('http://localhost:5005/webhooks/rest/webhook', json=params).json()[0]['text']
+        if return_message is not None:
+             return return_message
+    
         if message_info['message_type'] == 'private':
             return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
             if return_message is None:
                  return_message = parrot.inferred2string(message_info['message'])
+        
         elif message_info['message_type'] == 'group':
-            if self.parrot_run_time:
-                 if time.time() - self.parrot_run_time > 10:
-                    return_message = parrot.inferred2string(message_info['message'])
-                    self.parrot_run_time = time.time()
-            else:
-                 self.parrot_run_time = time.time()
-                 return_message = parrot.inferred2string(message_info['message'])
             if message_info['message'].startswith(self.bot_name):
                 message_info['message'] = message_info['message'].split(self.bot_name)[1]
                 return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
+            else:
+                if self.parrot_run_time:
+                    if time.time() - self.parrot_run_time > 10:
+                        return_message = parrot.inferred2string(message_info['message'])
+                        self.parrot_run_time = time.time()
+                else:
+                    self.parrot_run_time = time.time()
+                    return_message = parrot.inferred2string(message_info['message'])
+        
         if return_message:
             return return_message.replace('{me}',self.bot_name).replace('{name}',message_info['sender']['nickname'])
         else:
@@ -96,32 +108,32 @@ def get_setu(message_info):
      os.path.join(local_path, random.sample(os.listdir(local_path),1)[0])
      return ""
 
-@dispatcher.QQMessageHandler(identify_type=['commamd'],identify_value=[["来个色图","来点色图"]])
-def get_some_setu(message_info):
-    params = {
-        'r18':1,
-        'num': 1,
-        'tag': []
-    }
-    for line in message_info['message'].split('\n'):
-        if line.endswith('- h'):
-            return "使用方式：来点色图\n[tag=tag1 tag2 tag3] \n[]中可以不写，会返回一张色图，从p站下，会比较累"
-        if line.startswith('tag='):
-            params['tag'] = line[4:].split(' ')
-        if line.startswith('r18='):
-            params['r18'] = line[4:]
-        if line.startswith('num='):
-            params['num'] = line[4:]
-    if message_info['message_type'] == 'group':
-        params['r18'] = 0
+# @dispatcher.QQMessageHandler(identify_type=['commamd'],identify_value=[["来个色图","来点色图"]])
+# def get_some_setu(message_info):
+#     params = {
+#         'r18':1,
+#         'num': 1,
+#         'tag': []
+#     }
+#     for line in message_info['message'].split('\n'):
+#         if line.endswith('- h'):
+#             return "使用方式：来点色图\n[tag=tag1 tag2 tag3] \n[]中可以不写，会返回一张色图，从p站下，会比较累"
+#         if line.startswith('tag='):
+#             params['tag'] = line[4:].split(' ')
+#         if line.startswith('r18='):
+#             params['r18'] = line[4:]
+#         if line.startswith('num='):
+#             params['num'] = line[4:]
+#     if message_info['message_type'] == 'group':
+#         params['r18'] = 0
     
-    if params['tag'] == []:
-        local_path = os.path.join(os.path.join(DATA_DIR,'images','ghs'))
-        return dispatcher.cqCodeBuilder.image(os.path.join(local_path, random.sample(os.listdir(local_path),1)[0]))
-    else:
-        response = requests.get('https://api.lolicon.app/setu/v2', params=params).json()
-        response = response['data'][0]['urls']['original']
-        return dispatcher.cqCodeBuilder.imageDoCache(response)
+#     if params['tag'] == []:
+#         local_path = os.path.join(os.path.join(DATA_DIR,'images','ghs'))
+#         return dispatcher.cqCodeBuilder.image(os.path.join(local_path, random.sample(os.listdir(local_path),1)[0]))
+#     else:
+#         response = requests.get('https://api.lolicon.app/setu/v2', params=params).json()
+#         response = response['data'][0]['urls']['original']
+#         return dispatcher.cqCodeBuilder.imageDoCache(response)
 
 
 

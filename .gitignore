@@ -124,3 +124,4 @@ Untitled*.ipynb
 tests/data/stanza
 .vscode
 .rasa
+*.ipynb
