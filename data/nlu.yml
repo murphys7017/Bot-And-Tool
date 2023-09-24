@@ -1,0 +1,22 @@
+version: "3.1"
+
+
+nlu:
+- intent: get_setu
+  examples: |
+    - 来点色图
+    - 来个色图
+    - 要色色
+    - 要瑟瑟的萝莉
+    - 要瑟瑟的御姐
+    - 要涩涩
+    - 要色色！
+    - 要瑟瑟！
+    - 要涩涩！
+- intent: out_of_scope
+  examples: |
+    - 发一个出色的对话机器人是具有挑战
+    - 晚上几点
+    - 卖这么贵啊
+    - no russia
+    - 发生神魔事了

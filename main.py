@@ -11,9 +11,9 @@ from dispatcher import Dispatcher
 from parrot import Parrot
 
 # Bot名称
-BOT_NAME = 'ALLMIND'
+BOT_NAME = 'Alice'
 DATA_DIR = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data'
-PARROT_PATH = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\model\test'
+PARROT_PATH = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel'
 
 parrot = Parrot(PARROT_PATH)
 
@@ -26,23 +26,29 @@ class MyDispatch(Dispatcher):
      def dispatcherServletEndPoint(self,message_info):
         """重写如果没有匹配上处理器的最终处理方法,启用rasa,更加智能,但是响应变慢,没有具体到某一个方法的权限管理
         """
-        params = {
-            "sender": message_info['user_id'],
-            "message": message_info['message']
-        }
-        return_message = requests.post('http://localhost:5005/webhooks/rest/webhook', json=params).json()[0]['text']
-        if return_message is not None:
-             return return_message
-    
+        try:
+            params = {
+                "sender": message_info['user_id'],
+                "message": message_info['message']
+            }
+            return_message = requests.post('http://localhost:5005/webhooks/rest/webhook', json=params).json()[0]['text']
+
+            if return_message.startswith('PASS'):
+                return_message = None
+        except:
+            pass
+        
         if message_info['message_type'] == 'private':
-            return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
+            if message_info['message'] in self.fixed_response_map:
+                return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
             if return_message is None:
-                 return_message = parrot.inferred2string(message_info['message'])
+                return_message = parrot.inferred2string(message_info['message'])
         
         elif message_info['message_type'] == 'group':
             if message_info['message'].startswith(self.bot_name):
                 message_info['message'] = message_info['message'].split(self.bot_name)[1]
-                return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
+                if message_info['message'] in self.fixed_response_map:
+                    return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
             else:
                 if self.parrot_run_time:
                     if time.time() - self.parrot_run_time > 10:

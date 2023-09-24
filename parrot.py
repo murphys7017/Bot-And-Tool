@@ -34,12 +34,13 @@ class Parrot(object):
     def __init__(self,work_path):
         file_list =  os.listdir(work_path)
         if 'stopwords.txt' in file_list:
-            self.stopwords = [line.replace('\n','',1) for line in open(work_path+'/stopwords.txt',encoding='utf-8').readlines()]
+            self.stopwords = [line.replace('\n','',1) for line in open(os.path.join(work_path,'stopwords.txt'),encoding='utf-8').readlines()]
         if 'model.bin' in file_list:
-            self.model = Doc2Vec.load(work_path+'/model.bin')
+            self.model = Doc2Vec.load(os.path.join(work_path,'model.pkl'))
         if 'history.json' in file_list:
-            with open(work_path+'/history.json') as f:
+            with open(os.path.join(work_path,'history.json')) as f:
                 self.history = json.load(f)
+        print("Parrot started")
 
     def remove_stopwords(self,str1):
         words = []
@@ -53,7 +54,7 @@ class Parrot(object):
         msg_list = []
         nicknames = []
 
-        file = open(file_path).readlines()
+        file = open(file_path,encoding="utf-8").readlines()
         file = deal(file,'\n')
 
         for item in file:
@@ -94,15 +95,17 @@ class Parrot(object):
         tokenized = [TaggedDocument(sentence,tags=[index]) for index,sentence in enumerate(sentences)]
         self.model = Doc2Vec(tokenized,min_count=1,window=3,sample=1e-3,negative=5,workers=4)
         self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=10)
+    
     def save_model(self,save_path):
-        self.model.save(save_path+'/model.bin')
-        with open(save_path+'/history.json','w') as f:
+        self.model.save(os.path.join(save_path,'model.pkl'))
+        with open(os.path.join(save_path,'history.json'),'w') as f:
             json.dump(self.history,f,cls=ComplexEncoder)
+        
     def inferred2string(self,msg):
-
         inferred_vector = self.model.infer_vector(doc_words=self.remove_stopwords(msg))
         sims = self.model.dv.most_similar([inferred_vector],topn=1)[0][0]
         return self.history[sims]['message']
+    
     def update_model(self,data):
         """最好是{
                     'time': "%Y-%m-%d %H:%M:%S",
@@ -118,3 +121,4 @@ class Parrot(object):
         tokenized = [TaggedDocument(sentence,tags=[index]) for index,sentence in enumerate(sentence)]
         self.model.build_vocab(tokenized,update=True) #注意update = True 这个参数很重要
         self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=100)
+
