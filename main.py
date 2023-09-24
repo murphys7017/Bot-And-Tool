@@ -1,79 +1,26 @@
-import json
-import requests
-import websocket
-import time
-import threading
-import pandas as pd
-import os
-import random
-import os
 from dispatcher import Dispatcher
-from parrot import Parrot
-
-# Bot名称
-BOT_NAME = 'Alice'
-DATA_DIR = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data'
-PARROT_PATH = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel'
-
-parrot = Parrot(PARROT_PATH)
 
 
-class MyDispatch(Dispatcher):
-     parrot_run_time = None
-     def __init__(self, bot_name , http_server, ws_server, data_path):
-          super().__init__(bot_name, http_server, ws_server, data_path)
+BOT_CONFIG = {
+    'bot_name' : 'Alice',
+    'data_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data',
+    'cqhttp_url' : 'http://localhost:8882/',
+    'cqws_url' : 'ws://localhost:8883/',
+    'parrot_model_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel',
+    'rasa_url' : 'http://localhost:5005/webhooks/rest/webhook',
 
-     def dispatcherServletEndPoint(self,message_info):
-        """重写如果没有匹配上处理器的最终处理方法,启用rasa,更加智能,但是响应变慢,没有具体到某一个方法的权限管理
-        """
-        try:
-            params = {
-                "sender": message_info['user_id'],
-                "message": message_info['message']
-            }
-            return_message = requests.post('http://localhost:5005/webhooks/rest/webhook', json=params).json()[0]['text']
-
-            if return_message.startswith('PASS'):
-                return_message = None
-        except:
-            pass
-        
-        if message_info['message_type'] == 'private':
-            if message_info['message'] in self.fixed_response_map:
-                return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
-            if return_message is None:
-                return_message = parrot.inferred2string(message_info['message'])
-        
-        elif message_info['message_type'] == 'group':
-            if message_info['message'].startswith(self.bot_name):
-                message_info['message'] = message_info['message'].split(self.bot_name)[1]
-                if message_info['message'] in self.fixed_response_map:
-                    return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
-            else:
-                if self.parrot_run_time:
-                    if time.time() - self.parrot_run_time > 10:
-                        return_message = parrot.inferred2string(message_info['message'])
-                        self.parrot_run_time = time.time()
-                else:
-                    self.parrot_run_time = time.time()
-                    return_message = parrot.inferred2string(message_info['message'])
-        
-        if return_message:
-            return return_message.replace('{me}',self.bot_name).replace('{name}',message_info['sender']['nickname'])
-        else:
-            return None
+}
 
 
-dispatcher = MyDispatch(BOT_NAME,"http://localhost:8882/","ws://localhost:8883/",DATA_DIR)
+dispatcher = Dispatcher(BOT_CONFIG)
 
 
-
-
-@dispatcher.QQMessageHandler(identify_type=['commamd'],identify_value=[["Reply Test"]])
+@dispatcher.QQMessageHandler('reply_build_test')
 def reply_build_test(message_info):
     return dispatcher.cqCodeBuilder.reply("build_test", message_info)
 
-@dispatcher.QQMessageHandler(identify_type=['commamd'],identify_value=[["测试定时任务功能"]])
+
+@dispatcher.QQMessageHandler("测试定时任务功能")
 def add_scheduled_task(message_info):
     lines = message_info['message'].split('\n')
     script_path = ''
@@ -109,53 +56,19 @@ def add_scheduled_task(message_info):
     dispatcher.addTask("AddTask", minute='*', second='*/20',)
     return
 
-def get_setu(message_info):
-     local_path = os.path.join(os.path.join(DATA_DIR,'images','ghs'))
-     os.path.join(local_path, random.sample(os.listdir(local_path),1)[0])
-     return ""
-
-# @dispatcher.QQMessageHandler(identify_type=['commamd'],identify_value=[["来个色图","来点色图"]])
-# def get_some_setu(message_info):
-#     params = {
-#         'r18':1,
-#         'num': 1,
-#         'tag': []
-#     }
-#     for line in message_info['message'].split('\n'):
-#         if line.endswith('- h'):
-#             return "使用方式：来点色图\n[tag=tag1 tag2 tag3] \n[]中可以不写，会返回一张色图，从p站下，会比较累"
-#         if line.startswith('tag='):
-#             params['tag'] = line[4:].split(' ')
-#         if line.startswith('r18='):
-#             params['r18'] = line[4:]
-#         if line.startswith('num='):
-#             params['num'] = line[4:]
-#     if message_info['message_type'] == 'group':
-#         params['r18'] = 0
-    
-#     if params['tag'] == []:
-#         local_path = os.path.join(os.path.join(DATA_DIR,'images','ghs'))
-#         return dispatcher.cqCodeBuilder.image(os.path.join(local_path, random.sample(os.listdir(local_path),1)[0]))
-#     else:
-#         response = requests.get('https://api.lolicon.app/setu/v2', params=params).json()
-#         response = response['data'][0]['urls']['original']
-#         return dispatcher.cqCodeBuilder.imageDoCache(response)
 
 
 
-@dispatcher.QQMessageHandler(identify_type=['commamd'],identify_value=[[BOT_NAME+'在吗']])
+@dispatcher.QQMessageHandler('Alice在吗')
 def self_handle(message_info):
     res = '我在'+message_info['sender']['nickname'] + dispatcher.cqCodeBuilder.image(url="D:\Data\Image\emoji\-29af59a4b1fcbc27.gif")
     return res
 
 
-
-@dispatcher.QQMessageHandler(identify_value=['测试命令'])
-def self_handle(message_info):
+@dispatcher.QQMessageHandler('测试命令')
+def test_handle(message_info):
     # 自己的处理逻辑
     return '测试命令的响应'
-
-
 
 
 dispatcher.startServer()

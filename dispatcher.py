@@ -8,46 +8,70 @@ import jieba
 import re
 import difflib
 import os
+import time
 from apscheduler.schedulers.background import BackgroundScheduler
-
+from parrot import Parrot
 from cq_code_builder import CqCodeBuilder
 
 
 CQ_PATTERN = re.compile(r'\[CQ[^\]\[]*\]')
 
+BOT_CONFIG = {
+    'bot_name' : 'Alice',
+    'data_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data',
+    'cqhttp_url' : 'http://localhost:8882/',
+    'cqws_url' : 'ws://localhost:8883/',
+    'parrot_model_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel',
+    'rasa_url' : 'http://localhost:5005/webhooks/rest/webhook',
 
+}
 
 class Dispatcher(object):
+    parrot_run_time = None
+
     bot_name = ''
     fixed_response_map = {}
     user_power_map = {}
+
     ws_server_path = ""
     http_server_path = ""
     data_path = ''
+    rasa_path = None
 
-    cqCodeBuilder = object
+    similarity_rate = 0.6
+
+    parrot = None
     scheduler = BackgroundScheduler()
     wsapp = object
+    cqCodeBuilder = object
+
 
 
     SPECIFIC_MESSAGE_HEADERS = {}
     SCHEDULER_MAP = {}
     GROUP = []
     FRIEND = []
+    def __init__(self, bot_config):
+        self.bot_name = bot_config['bot_name']
+        self.data_path = bot_config['data_path']
 
-    def __init__(self, bot_name , http_server, ws_server, data_path):
-        self.bot_name = bot_name
-
-        if http_server.endswith('/'):
-            self.http_server_path = http_server
+        if bot_config['cqhttp_url'].endswith('/'):
+            self.http_server_path = bot_config['cqhttp_url']
         else:
-            self.http_server_path = http_server + '/'
-        self.ws_server_path = ws_server
-        self.data_path = data_path
-        self.cqCodeBuilder = CqCodeBuilder(self.http_server_path,os.path.join(data_path,'images'))
+            self.http_server_path = bot_config['cqhttp_url'] + '/'
 
+        self.ws_server_path = bot_config['cqws_url']
+
+        self.cqCodeBuilder = CqCodeBuilder(self.http_server_path,os.path.join(self.data_path,'images'))
         self.scheduler.start()
+
+        if 'parrot_model_path' in bot_config:
+            self.parrot = Parrot(bot_config['parrot_model_path'])
+        if 'rasa_url' in bot_config:
+            self.rasa_path = bot_config['rasa_url']
+
         self.init()
+
     
     def init(self):
         temp_path = os.path.join(self.data_path,'FixedReply')
@@ -77,45 +101,88 @@ class Dispatcher(object):
 
 
     def dispatcherServletEndPoint(self,message_info):
+        """重写如果没有匹配上处理器的最终处理方法,启用rasa,更加智能,但是响应变慢,没有具体到某一个方法的权限管理
+        """
+        if self.rasa_path:
+            try:
+                
+                params = {
+                    "sender": message_info['user_id'],
+                    "message": message_info['message']
+                }
+                return_message = requests.post(self.rasa_path, json=params).json()[0]['text']
+
+                if return_message.startswith('PASS'):
+                    return_message = None
+            except:
+                pass
+        
         if message_info['message_type'] == 'private':
-            return_message = random.sample(self.fixed_response_map[message_info['message']], 1)
+            if message_info['message'] in self.fixed_response_map:
+                return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
+            if self.parrot and return_message is None:
+                return_message = self.parrot.inferred2string(message_info['message'])
+        
         elif message_info['message_type'] == 'group':
             if message_info['message'].startswith(self.bot_name):
                 message_info['message'] = message_info['message'].split(self.bot_name)[1]
-                return_message = random.sample(self.fixed_response_map[message_info['message']], 1)
-            else:
-                return_message = None
-        else:
-            return None
-        if len(return_message) == 1:
-            return return_message[0].replace('{me}',self.bot_name).replace('{name}',message_info['sender']['nickname'])
+                if message_info['message'] in self.fixed_response_map:
+                    return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
+            elif self.parrot:
+                if self.parrot_run_time:
+                    if time.time() - self.parrot_run_time > 10:
+                        return_message = self.parrot.inferred2string(message_info['message'])
+                        self.parrot_run_time = time.time()
+                else:
+                    self.parrot_run_time = time.time()
+                    return_message = self.parrot.inferred2string(message_info['message'])
+        
+        if return_message:
+            return return_message.replace('{me}',self.bot_name).replace('{name}',message_info['sender']['nickname'])
         else:
             return None
         
 
     # 消息处理器注解
-    def QQMessageHandler(self,identify_type=[], identify_value=None, identify_level=3):
+    # def QQMessageHandler(self,identify_type=[], identify_value=None, identify_level=3):
+    #     """声明函数为消息处理函数的注解 @QQMessageHandler(identify_type=[], identify_value=[])
+    #     :param identify_type 字符数组  [ 'keywords' , 'similar' , 'commamd' ] 选择使用何种方式来识别命令
+    #     :param identify_value 字符数组 [['k1,k2,k3',...] ,[string,...] ,[string,...] ,[string,...]] 具体的值，超出identify_type部分自动归到unknow类，全匹配，可能会影响性能
+    #     :param identity_level int 用户权限分级
+    #     """
+    #     def decorate(fn):
+    #         if identify_value is not None:
+    #             if identify_level not in self.SPECIFIC_MESSAGE_HEADERS:
+    #                 self.SPECIFIC_MESSAGE_HEADERS[identify_level] = {'keywords':{} , 'similar':{} , 'commamd':{},'unknow':{}}
+    #             fn.__annotations__['identify_type'] = identify_type
+    #             fn.__annotations__['identify_value'] = identify_value
+    #             # 在global中添加
+    #             j = 0
+    #             i = 0
+    #             for i in range(len(identify_type)):
+    #                 for key in identify_value[i]:
+    #                     self.SPECIFIC_MESSAGE_HEADERS[identify_level][identify_type[i]][key] = fn
+    #                 j = j + 1
+    #             for j in range(j,len(identify_value)):
+    #                 for key in identify_value[i]:
+    #                     self.SPECIFIC_MESSAGE_HEADERS[identify_level]['unknow'][key] = fn
+    #         return fn
+    #     return decorate 
+    
+    def QQMessageHandler(self,*commands, level=5):
         """声明函数为消息处理函数的注解 @QQMessageHandler(identify_type=[], identify_value=[])
         :param identify_type 字符数组  [ 'keywords' , 'similar' , 'commamd' ] 选择使用何种方式来识别命令
-        :param identify_value 字符数组 [['k1,k2,k3',...] ,[string,...] ,[string,...] ,[string,...]] 具体的值，超出identify_type部分自动归到unknow类，全匹配，可能会影响性能
+        :param identify_value 字符数组 [['k1,k2,much_min_number','k1，k2，much_min_number'...] ,[string,...] ,[string,...] ,[string,...]] 具体的值，超出identify_type部分自动归到unknow类，全匹配，可能会影响性能
         :param identity_level int 用户权限分级
         """
         def decorate(fn):
-            if identify_value is not None:
-                if identify_level not in self.SPECIFIC_MESSAGE_HEADERS:
-                    self.SPECIFIC_MESSAGE_HEADERS[identify_level] = {'keywords':{} , 'similar':{} , 'commamd':{},'unknow':{}}
-                fn.__annotations__['identify_type'] = identify_type
-                fn.__annotations__['identify_value'] = identify_value
-                # 在global中添加
-                j = 0
-                i = 0
-                for i in range(len(identify_type)):
-                    for key in identify_value[i]:
-                        self.SPECIFIC_MESSAGE_HEADERS[identify_level][identify_type[i]][key] = fn
-                    j = j + 1
-                for j in range(j,len(identify_value)):
-                    for key in identify_value[i]:
-                        self.SPECIFIC_MESSAGE_HEADERS[identify_level]['unknow'][key] = fn
+            if level not in self.SPECIFIC_MESSAGE_HEADERS:
+                    self.SPECIFIC_MESSAGE_HEADERS[level] = {}
+            
+            for key in commands:
+                self.SPECIFIC_MESSAGE_HEADERS[level][key] = fn
+
+
             return fn
         return decorate 
 
@@ -125,32 +192,36 @@ class Dispatcher(object):
         划定调用顺序，command精准匹配为最低级
         """
         message = message_info['message']
-        default_level = 3
+        default_level = 6
         if message_info['user_id'] in self.user_power_map:
             default_level = self.user_power_map[message_info['user_id']]
         for level in range(default_level+1):
             if level in self.SPECIFIC_MESSAGE_HEADERS:
-                # 先来点低效率测试
-                for key in self.SPECIFIC_MESSAGE_HEADERS[level]['unknow']:
+                for key in self.SPECIFIC_MESSAGE_HEADERS[level]:
                     if str(message).startswith(key):
-                        return self.SPECIFIC_MESSAGE_HEADERS[level]['unknow'][key](message_info)
-                    elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio():
-                        return self.SPECIFIC_MESSAGE_HEADERS[level]['unknow'][key](message_info)
-                    elif len(set(key.split(',')).intersection(set(jieba.lcut(message)))) > 0:
-                        return self.SPECIFIC_MESSAGE_HEADERS[level]['unknow'][key](message_info)
-                
+                        return self.SPECIFIC_MESSAGE_HEADERS[level][key](message_info)
+                    elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.similarity_rate:
+                        return self.SPECIFIC_MESSAGE_HEADERS[level][key](message_info)
+                    elif ',' in key:
+                        keys = key.split(',')
+                        if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+                            return self.SPECIFIC_MESSAGE_HEADERS[level][key](message_info)
+                    elif '，' in key:
+                        keys = key.split(',')
+                        if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+                            return self.SPECIFIC_MESSAGE_HEADERS[level][key](message_info)
 
-                for key in self.SPECIFIC_MESSAGE_HEADERS[level]['similar']:
-                    if difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio():
-                        return self.SPECIFIC_MESSAGE_HEADERS[level]['similar'][key](message_info)
+                # for key in self.SPECIFIC_MESSAGE_HEADERS[level]['similar']:
+                #     if difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.similarity_rate:
+                #         return self.SPECIFIC_MESSAGE_HEADERS[level]['similar'][key](message_info)
                 
-                for key in self.SPECIFIC_MESSAGE_HEADERS[level]['keywords']:
-                    if len(set(key.split(',')).intersection(set(jieba.lcut(message)))) > 0:
-                        return self.SPECIFIC_MESSAGE_HEADERS[level]['keywords'][key](message_info)
+                # for key in self.SPECIFIC_MESSAGE_HEADERS[level]['keywords']:
+                #     if len(set(key.split(',')).intersection(set(jieba.lcut(message)))) > 0:
+                #         return self.SPECIFIC_MESSAGE_HEADERS[level]['keywords'][key](message_info)
                     
-                for key in self.SPECIFIC_MESSAGE_HEADERS[level]['commamd']:
-                    if str(message).startswith(key):
-                        return self.SPECIFIC_MESSAGE_HEADERS[level]['commamd'][key](message_info)
+                # for key in self.SPECIFIC_MESSAGE_HEADERS[level]['commamd']:
+                #     if str(message).startswith(key):
+                #         return self.SPECIFIC_MESSAGE_HEADERS[level]['commamd'][key](message_info)
                 
         return None
     

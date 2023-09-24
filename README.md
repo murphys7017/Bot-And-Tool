@@ -27,12 +27,25 @@ apscheduler # 定时任务
 ~~~python
 from dispatcher import Dispatcher
 
-BOT_NAME = 'ALLMIND'
-DATA_DIR = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data'
+BOT_CONFIG = {
+    # 必填项
+    # 机器人名称（没啥用
+    'bot_name' : 'Alice',
+    # 保存数据的位置
+    'data_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data',
+    # gocqhttp的websocket路径和http路径
+    'cqhttp_url' : 'http://localhost:8882/',
+    'cqws_url' : 'ws://localhost:8883/',
+    
+    # 可选配置，删除的话即认为不使用对应功能
+    'parrot_model_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel',
+    'rasa_url' : 'http://localhost:5005/webhooks/rest/webhook',
 
-dispatcher = Dispatcher(BOT_NAME,"http://localhost:8882/","ws://localhost:8883/",DATA_DIR)
+}
 
-@dispatcher.QQMessageHandler(identify_value=['测试命令'])
+dispatcher = Dispatcher(BOT_CONFIG)
+
+@dispatcher.QQMessageHandler('测试命令1','测试命令2',...)
 def self_handle(message_info):
     # 自己的处理逻辑
     return '测试命令的响应'
@@ -47,7 +60,7 @@ dispatcher.startServer()
 
 - [x] 尝试使用rasa做消息分发处理
 - [ ] 优化rasa的使用
-- [ ] 优化整体配置使用
+- [x] 优化整体配置使用
 - [ ] 添加新功能
 
 # Parrot
@@ -109,4 +122,12 @@ return_message = parrot.inferred2string(message)
 
 # Rasa
 
-rasa 正在学着做的
+rasa 正在学着做的，好像明白这玩意咋回事了，开始开发功能
+
+
+
+# 更新记录
+
+### 9月24日
+
+优化了注解，优化[学着用]了rasa
