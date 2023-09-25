@@ -17,6 +17,9 @@ pipeline:
 # # See https://rasa.com/docs/rasa/tuning-your-model for more information.
    - name: "JiebaTokenizer"
    - name: RegexFeaturizer
+     use_word_boundaries: False
+     use_lookup_tables: True
+     use_regexes: True
    - name: LexicalSyntacticFeaturizer
    - name: CountVectorsFeaturizer
    - name: CountVectorsFeaturizer

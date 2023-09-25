@@ -16,15 +16,6 @@ from cq_code_builder import CqCodeBuilder
 
 CQ_PATTERN = re.compile(r'\[CQ[^\]\[]*\]')
 
-BOT_CONFIG = {
-    'bot_name' : 'Alice',
-    'data_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data',
-    'cqhttp_url' : 'http://localhost:8882/',
-    'cqws_url' : 'ws://localhost:8883/',
-    'parrot_model_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel',
-    'rasa_url' : 'http://localhost:5005/webhooks/rest/webhook',
-
-}
 
 class Dispatcher(object):
     parrot_run_time = None
@@ -105,7 +96,6 @@ class Dispatcher(object):
         """
         if self.rasa_path:
             try:
-                
                 params = {
                     "sender": message_info['user_id'],
                     "message": message_info['message']

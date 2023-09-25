@@ -3,9 +3,12 @@ import json
 import re
 import os
 import jieba
+from jionlp import remove_stopwords
 from gensim.models.doc2vec import TaggedDocument
 from gensim.models import Doc2Vec
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+
+
 def deal(list_ori,p):   
     list_new=[]				#处理后的列表，是一个二维列表
     list_short=[]			#用于存放每一段列表
@@ -28,14 +31,11 @@ class ComplexEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
         
 class Parrot(object):
-    stopwords = []
     model = object
     history = []
     def __init__(self,work_path):
         file_list =  os.listdir(work_path)
-        if 'stopwords.txt' in file_list:
-            self.stopwords = [line.replace('\n','',1) for line in open(os.path.join(work_path,'stopwords.txt'),encoding='utf-8').readlines()]
-        if 'model.bin' in file_list:
+        if 'model.pkl' in file_list:
             self.model = Doc2Vec.load(os.path.join(work_path,'model.pkl'))
         if 'history.json' in file_list:
             with open(os.path.join(work_path,'history.json')) as f:
@@ -43,11 +43,7 @@ class Parrot(object):
         print("Parrot started")
 
     def remove_stopwords(self,str1):
-        words = []
-        for word in jieba.lcut(str1):
-            if word not in self.stopwords:
-                words.append(word)
-        return words
+        return remove_stopwords(jieba.lcut(str1))
 
     def process_chat_history(self,file_path):
         pt = re.compile(r'(\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}) ([^(]*)\(([1-9][0-9]{4,})\)')

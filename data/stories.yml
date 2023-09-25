@@ -10,3 +10,24 @@ stories:
   - intent: out_of_scope
   - action: utter_default
 
+
+- story: form with stop then deny
+  steps:
+    - or:
+        - intent: weather
+        - intent: weather
+          entities:
+            - address: 北京
+        - intent: weather
+          entities:
+            - address: 北京
+    - action: weather_form
+    - active_loop: weather_form
+    - intent: stop
+    - action: utter_ask_continue
+    - intent: deny
+    - action: action_deactivate_loop
+    - active_loop: null
+
+
+
