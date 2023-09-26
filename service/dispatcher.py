@@ -44,7 +44,7 @@ class Dispatcher(object):
     SCHEDULER_MAP = {}
     GROUP = []
     FRIEND = []
-    def __init__(self, bot_config, if_start_rasa=True):
+    def __init__(self, if_start_rasa=True):
         config.init()
         self.bot_name = config.SERVICE_CONFIG.bot_name
         self.data_path = config.SERVICE_CONFIG.data_path

@@ -1,19 +1,7 @@
 from service.dispatcher import Dispatcher
 
 
-BOT_CONFIG = {
-    'bot_name' : 'Alice', 
-    'data_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data',
-    'cqhttp_url' : 'http://localhost:8882/',
-    'cqws_url' : 'ws://localhost:8883/',
-    'parrot_model_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel',
-    'rasa_url' : 'http://localhost:5005/webhooks/rest/webhook',
-    'hefeng_key' : '4fd5b28a9a27428e92dd14cada996806'
-
-}
-
-
-dispatcher = Dispatcher(BOT_CONFIG, if_start_rasa = False)
+dispatcher = Dispatcher(if_start_rasa = False)
 
 
 @dispatcher.QQMessageHandler('reply_build_test')
