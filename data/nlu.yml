@@ -7,7 +7,18 @@ nlu:
     - Alice介绍一下自己吧
     - Alice你是什么玩意
     - Alice你能干什么
-- intent: get_setuW
+# - intent: get_setu
+#   examples: |
+#     - 来点色图
+#     - 来个色图
+#     - 要色色
+#     - 要瑟瑟的萝莉
+#     - 要瑟瑟的御姐
+#     - 要涩涩
+#     - 要色色！
+#     - 要瑟瑟！
+#     - 要涩涩！
+- intent: get_setu_tags
   examples: |
     - 来点色图
     - 来个色图
@@ -18,6 +29,20 @@ nlu:
     - 要色色！
     - 要瑟瑟！
     - 要涩涩！
+    - 要色色
+    - 要瑟瑟
+    - 要涩涩
+    - 来点黑丝兽耳萝莉色图
+    - 来点黑丝御姐色图
+    - 要涩涩的黑丝大姐姐
+    - 要涩涩的双马尾萝莉
+    - 要涩涩的黑丝学姐
+    - 来点兽耳萝莉色图
+    - 来点黑丝色图
+    - 要涩涩的大姐姐
+    - 要涩涩的双马尾萝莉
+    - 要涩涩的学姐
+
 
 - intent: deny
   examples: |
@@ -48,19 +73,6 @@ nlu:
 
 - intent: weather
   examples: |
-    - 显示天气
-    - 天气
-    - 我需要不需要雨靴
-    - 我该穿外套吗
-    - 去外边要穿外衣吗
-    - 去外边要带夹克吗
-    - 外边需要雨伞吗
-    - 天气是不是很凉快
-    - 最近的天气是不是很冷
-    - 天气预报
-    - 天气很冷吗
-    - 天气会不会很热
-    - 天气温和吗
     - [北京](address)会不会阴雨
     - [上海](address)什么天气
     - 不好意思可以帮我查[香港](address)的天气
@@ -127,23 +139,6 @@ nlu:
     - 今天天气几度
     - 会不会很冷
     - 是不是很热
-- intent: info_date
-  examples: |
-    - [明天](date-time)
-    - [后天](date-time)
-    - [下个星期日](date-time)怎么样
-    - 还需要[昨天](date-time)的
-    - 我还要[昨天](date-time)的
-    - [明天](date-time)如何
-    - [后天](date-time)如何
-    - [星期六](date-time)呢
-    - [后天](date-time)的呢
-    - [明天](date-time)的怎么说
-    - [两天后](date-time)的大概什么样
-    - [前天](date-time)的
-    - 帮我查查[三天前](date-time)
-    - 帮我查查[下星期五](date-time)的
-    - 还要[明天](date-time)的
 - intent: info_address
   examples: |
     - 告诉我[广州](address)怎么样
@@ -158,23 +153,3 @@ nlu:
     - 在[宁波](address)呢
     - [宁波](address)
     - [首都](address)
-- synonym: 下个星期一
-  examples: |
-    - 下星期一
-- synonym: 今天
-  examples: |
-    - 早上
-    - 中午
-    - 晚上
-    - 下午
-    - 傍晚
-    - 今日
-- synonym: 明天
-  examples: |
-    - 明日
-- synonym: 北京
-  examples: |
-    - 首都
-- synonym: 上海
-  examples: |
-    - 魔都

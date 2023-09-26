@@ -6,7 +6,7 @@ BOT_CONFIG = {
     'data_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data',
     'cqhttp_url' : 'http://localhost:8882/',
     'cqws_url' : 'ws://localhost:8883/',
-    'parrot_model_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel',
+    'parrot_model_path-d' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel',
     'rasa_url' : 'http://localhost:5005/webhooks/rest/webhook',
 
 }

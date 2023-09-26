@@ -33,6 +33,7 @@ class ComplexEncoder(json.JSONEncoder):
 class Parrot(object):
     model = object
     history = []
+    similarity_rate = 0.8
     def __init__(self,work_path):
         file_list =  os.listdir(work_path)
         if 'model.pkl' in file_list:
@@ -99,8 +100,11 @@ class Parrot(object):
         
     def inferred2string(self,msg):
         inferred_vector = self.model.infer_vector(doc_words=self.remove_stopwords(msg))
-        sims = self.model.dv.most_similar([inferred_vector],topn=1)[0][0]
-        return self.history[sims]['message']
+        sims = self.model.dv.most_similar([inferred_vector],topn=5)
+        for sim in sims:
+            if len(self.history[sim[0]]) > 2 and sim[1] >= self.similarity_rate:
+                return self.history[sim[0]]['message']
+        return None
     
     def update_model(self,data):
         """最好是{

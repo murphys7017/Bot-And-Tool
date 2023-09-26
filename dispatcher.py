@@ -104,6 +104,8 @@ class Dispatcher(object):
 
                 if return_message.startswith('PASS'):
                     return_message = None
+                else:
+                    return return_message
             except:
                 pass
         

@@ -5,11 +5,12 @@ intents:
   - get_setu
   - out_of_scope
   - weather
-  - info_date
   - info_address
+  - get_setu_tags
 
 entities:
   - address
+  - setu_tag
 slots:
   address:
     type: text
@@ -21,8 +22,6 @@ slots:
 responses:
   utter_ask_address:
     - text: 想查询哪里的天气呢？
-  utter_ask_date-time:
-    - text: 想查询什么时候的天气呢？
   utter_ask_continue:
     - text: 是否要继续？
   utter_default:

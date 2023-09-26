@@ -49,7 +49,7 @@ class GetSetuAction(Action):
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         message_text = tracker.latest_message['text']
-        print( "action_get_setu")
+        
         tags = []
         for tag in SETU_TAG:
             if tag in message_text:
@@ -96,6 +96,6 @@ class WeatherForm(Action):
             location_data = requests.get(get_location_url,get_loction_params).json()['location'][0]
             page = requests.get(location_data['fxLink'])
             soup = BeautifulSoup(page.text, 'html.parser')
-            abstract = soup.find_all('div', class_='current-abstract')
-            dispatcher.utter_message(abstract + '\n 详细信息：'+location_data['fxLink'])
+            abstract = soup.find_all('div', class_='current-abstract')[0]
+            dispatcher.utter_message(abstract.text.strip() + '\n 详细信息：'+location_data['fxLink'])
         return []
