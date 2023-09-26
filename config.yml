@@ -4,8 +4,12 @@ recipe: default.v1
 
 # The assistant project unique identifier
 # This default value must be replaced with a unique assistant name within your deployment
+# 同bot名称
 assistant_id: Alice
-
+# 和风api的用户key
+he_feng_key: 4fd5b28a9a27428e92dd14cada996806
+go_cqhttp_http: http://localhost:8882/
+go_cqhttp_websocket: ws://localhost:8883/
 # Configuration for Rasa NLU.
 # https://rasa.com/docs/rasa/nlu/components/
 
