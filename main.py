@@ -1,7 +1,7 @@
 from service.dispatcher import Dispatcher
 
 
-dispatcher = Dispatcher(if_start_rasa = False)
+dispatcher = Dispatcher(if_start_rasa=False,similarity_rate=0.99)
 
 
 @dispatcher.QQMessageHandler('reply_build_test')

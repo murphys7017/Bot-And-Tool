@@ -40,11 +40,11 @@ class Dispatcher(object):
 
 
 
-    SPECIFIC_MESSAGE_HEADERS = {}
+    command_index = {}
     SCHEDULER_MAP = {}
     GROUP = []
     FRIEND = []
-    def __init__(self, if_start_rasa=True):
+    def __init__(self, if_start_rasa=True,command_similarity_rate=0.6,parrot_similarity_rate=0.8):
         config.init()
         self.bot_name = config.SERVICE_CONFIG.bot_name
         self.data_path = config.SERVICE_CONFIG.data_path
@@ -53,8 +53,8 @@ class Dispatcher(object):
 
         self.cqCodeBuilder = CqCodeBuilder()
         self.scheduler.start()
-        self.parrot = Parrot()
-            
+        self.parrot = Parrot(parrot_similarity_rate)
+        self.similarity_rate = command_similarity_rate
    
         if if_start_rasa:
                 subprocess.Popen('rasa run actions', cwd='./')
@@ -88,25 +88,23 @@ class Dispatcher(object):
         for item in requests.get(self.http_server_path+'get_friend_list').json()['data']:
             self.FRIEND.append(item['user_id'])
 
+    def getRasaResponse(self,message_info):
+        try:
+            params = {
+                "sender": message_info['user_id'],
+                "message": message_info['message']
+            }
+            return_message = requests.post( config.SERVICE_CONFIG.rasa_url, json=params).json()[0]['text']
 
-    def dispatcherServletEndPoint(self,message_info):
-        """重写如果没有匹配上处理器的最终处理方法,启用rasa,更加智能,但是响应变慢,没有具体到某一个方法的权限管理
-        """
-        if config.SERVICE_CONFIG.activate_rasa:
-            try:
-                params = {
-                    "sender": message_info['user_id'],
-                    "message": message_info['message']
-                }
-                return_message = requests.post( config.SERVICE_CONFIG.rasa_url, json=params).json()[0]['text']
-
-                if return_message.startswith('PASS'):
-                    return_message = None
-                else:
-                    return return_message
-            except:
-                pass
-        
+            if return_message.startswith('PASS'):
+                return_message = None
+            else:
+                return return_message
+        except:
+            return None
+    
+    def fixReponseParrot(self,message_info):
+        return_message = None
         if message_info['message_type'] == 'private':
             if message_info['message'] in self.fixed_response_map:
                 return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
@@ -126,93 +124,92 @@ class Dispatcher(object):
                 else:
                     self.parrot_run_time = time.time()
                     return_message = self.parrot.inferred2string(message_info['message'])
+        return return_message
+
+    def dispatcherServletEndPoint(self,message_info):
+        """重写如果没有匹配上处理器的最终处理方法,启用rasa,更加智能,但是响应变慢,没有具体到某一个方法的权限管理
+        """
+        if config.SERVICE_CONFIG.activate_rasa:
+            return_message = self.getRasaResponse(message_info)
+        
+        if return_message:
+            return_message = self.fixReponseParrot(message_info)
         
         if return_message:
             return return_message.replace('{me}',self.bot_name).replace('{name}',message_info['sender']['nickname'])
         else:
             return None
-        
-
-    # 消息处理器注解
-    # def QQMessageHandler(self,identify_type=[], identify_value=None, identify_level=3):
-    #     """声明函数为消息处理函数的注解 @QQMessageHandler(identify_type=[], identify_value=[])
-    #     :param identify_type 字符数组  [ 'keywords' , 'similar' , 'commamd' ] 选择使用何种方式来识别命令
-    #     :param identify_value 字符数组 [['k1,k2,k3',...] ,[string,...] ,[string,...] ,[string,...]] 具体的值，超出identify_type部分自动归到unknow类，全匹配，可能会影响性能
-    #     :param identity_level int 用户权限分级
-    #     """
-    #     def decorate(fn):
-    #         if identify_value is not None:
-    #             if identify_level not in self.SPECIFIC_MESSAGE_HEADERS:
-    #                 self.SPECIFIC_MESSAGE_HEADERS[identify_level] = {'keywords':{} , 'similar':{} , 'commamd':{},'unknow':{}}
-    #             fn.__annotations__['identify_type'] = identify_type
-    #             fn.__annotations__['identify_value'] = identify_value
-    #             # 在global中添加
-    #             j = 0
-    #             i = 0
-    #             for i in range(len(identify_type)):
-    #                 for key in identify_value[i]:
-    #                     self.SPECIFIC_MESSAGE_HEADERS[identify_level][identify_type[i]][key] = fn
-    #                 j = j + 1
-    #             for j in range(j,len(identify_value)):
-    #                 for key in identify_value[i]:
-    #                     self.SPECIFIC_MESSAGE_HEADERS[identify_level]['unknow'][key] = fn
-    #         return fn
-    #     return decorate 
     
-    def QQMessageHandler(self,*commands, level=5):
+    def QQMessageHandler(self,*commands, level=5, activate_id=None):
         """声明函数为消息处理函数的注解 @QQMessageHandler(identify_type=[], identify_value=[])
         :param identify_type 字符数组  [ 'keywords' , 'similar' , 'commamd' ] 选择使用何种方式来识别命令
         :param identify_value 字符数组 [['k1,k2,much_min_number','k1，k2，much_min_number'...] ,[string,...] ,[string,...] ,[string,...]] 具体的值，超出identify_type部分自动归到unknow类，全匹配，可能会影响性能
         :param identity_level int 用户权限分级
         """
         def decorate(fn):
-            if level not in self.SPECIFIC_MESSAGE_HEADERS:
-                    self.SPECIFIC_MESSAGE_HEADERS[level] = {}
+            if level not in self.command_index:
+                    self.command_index[level] = {}
             
-            for key in commands:
-                self.SPECIFIC_MESSAGE_HEADERS[level][key] = fn
-
-
+            if activate_id:
+                for key in commands:
+                    self.command_index[level][key]['function'] = fn
+                    self.command_index[level][key]['activate_id'] = activate_id
+                
             return fn
         return decorate 
+    
+    # 获取用户权限
+    def getUserPower(self,message_info):
+        # 用户权限
+        if message_info['user_id'] in self.user_power_map:
+            return self.user_power_map[message_info['user_id']]
+        else:
+            return 6
+    
+    # 根据消息获取到方法的索引
+    def getCommandByMessage(self,message,user_power):
+        for level in range(user_power+1):
+            if level in self.command_index:
+                for key in self.command_index[level]:
+                    # 匹配消息的开头
+                    if str(message).startswith(key):
+                        return key
+                
+                    # 匹配相似度 计划废弃
+                    elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.similarity_rate:
+                        return key
+                    
+                    # 匹配关键词 计划废弃
+                    elif ',' in key:
+                        keys = key.split(',')
+                        if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+                            return key
+                    elif '，' in key:
+                        keys = key.split(',')
+                        if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+                            return key
+        return None
 
+    # 调用方法执行
+    def runAction(self,level, command,message_info):
+        functionInfo = self.command_index[level][command]
+        if 'activate_id' in functionInfo:
+            if message_info['user_id'] in functionInfo['activate_id']:
+                return functionInfo['function'](message_info)
+            else:
+                return None
+            
     # 消息分发到匹配规则的方法
     def messageHandlerMapping(self,message_info):
         """
         划定调用顺序，command精准匹配为最低级
         """
-        message = message_info['message']
-        default_level = 6
-        if message_info['user_id'] in self.user_power_map:
-            default_level = self.user_power_map[message_info['user_id']]
-        for level in range(default_level+1):
-            if level in self.SPECIFIC_MESSAGE_HEADERS:
-                for key in self.SPECIFIC_MESSAGE_HEADERS[level]:
-                    if str(message).startswith(key):
-                        return self.SPECIFIC_MESSAGE_HEADERS[level][key](message_info)
-                    elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.similarity_rate:
-                        return self.SPECIFIC_MESSAGE_HEADERS[level][key](message_info)
-                    elif ',' in key:
-                        keys = key.split(',')
-                        if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
-                            return self.SPECIFIC_MESSAGE_HEADERS[level][key](message_info)
-                    elif '，' in key:
-                        keys = key.split(',')
-                        if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
-                            return self.SPECIFIC_MESSAGE_HEADERS[level][key](message_info)
+        
+        user_power = self.getUserPower(message_info)
+        command = self.getCommandByMessage(message_info['message'],user_power)
+        if command:
+            return self.runAction(user_power, command,message_info)
 
-                # for key in self.SPECIFIC_MESSAGE_HEADERS[level]['similar']:
-                #     if difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.similarity_rate:
-                #         return self.SPECIFIC_MESSAGE_HEADERS[level]['similar'][key](message_info)
-                
-                # for key in self.SPECIFIC_MESSAGE_HEADERS[level]['keywords']:
-                #     if len(set(key.split(',')).intersection(set(jieba.lcut(message)))) > 0:
-                #         return self.SPECIFIC_MESSAGE_HEADERS[level]['keywords'][key](message_info)
-                    
-                # for key in self.SPECIFIC_MESSAGE_HEADERS[level]['commamd']:
-                #     if str(message).startswith(key):
-                #         return self.SPECIFIC_MESSAGE_HEADERS[level]['commamd'][key](message_info)
-                
         return None
     
     # 消息加工

@@ -35,7 +35,8 @@ class Parrot(object):
     model = object
     history = []
     similarity_rate = 0.96
-    def __init__(self):
+    def __init__(self, similarity_rate=0.96):
+        self.similarity_rate = similarity_rate
         file_list =  os.listdir(config.SERVICE_CONFIG.parrot_model_path)
         if 'model.pkl' in file_list:
             self.model = Doc2Vec.load(os.path.join(config.SERVICE_CONFIG.parrot_model_path,'model.pkl'))
