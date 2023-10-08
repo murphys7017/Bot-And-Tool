@@ -2,7 +2,7 @@ import random
 from service.dispatcher import Dispatcher
 from service.storage import Storage
 
-dispatcher = Dispatcher(if_start_rasa=False,parrot_similarity_rate=0.99)
+dispatcher = Dispatcher()
 storage = Storage()
 
 @dispatcher.QQMessageHandler("测试定时任务功能")

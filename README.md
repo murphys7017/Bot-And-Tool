@@ -40,6 +40,48 @@ rasa # 3以上，可选
 
 需要go-cqhttp开启正向ws和http接口，工具通过websocket来读取消息，通过http来进行发送消息等操作
 
+> 可自行重写`dispatcher`中的`messageProcesse`方法和`sendAction`方法来进行适配其他数据源
+>
+> 非web socket可以直接调用`messageDispatcherServlet`
+
+**`message_info`参数格式要求：**
+
+~~~python
+{
+  'post_type': 'message', 
+  'message_type': 'private', 
+  'time': 1694183059, 
+  'self_id': 2762018040, 
+  'sub_type': 'friend', 
+  'target_id': 2762018040, 
+  'message': '你好', 
+  'font': 0, 
+  'sender': {'age': 0, 'nickname': 'Aki-Polaris', 'sex': 'unknown', 'user_id': xxx}, 
+  'message_id': -2001115448, 
+  'user_id': xxx
+}
+
+{
+  'post_type': 'message', 
+  'message_type': 'group', 
+  'time': 1694395091, 
+  'self_id': xxx, 
+  'sub_type': 'normal', 
+  'anonymous': None, 
+  'message': '', 
+  'message_seq': 81567, 
+  'font': 0, 
+  'group_id': xxx, 
+  'sender': {'age': 0, 'area': '', 'card': '', 'level': '', 'nickname': 'xxx', 'role': 'member', 'sex': 'unknown', 'title': '', 'user_id': xxx}, 
+  'user_id': xxx, 
+  'message_id': -185279243
+}
+~~~
+
+
+
+
+
 ### 例子
 
 **config.yml**

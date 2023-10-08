@@ -16,7 +16,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from service.parrot import Parrot
 from service.cq_code_builder import CqCodeBuilder
 from service import config
-config.init()
+config.initialize()
 
 CQ_PATTERN = re.compile(r'\[CQ[^\]\[]*\]')
 
@@ -32,7 +32,7 @@ class Dispatcher(object):
     http_server_path = ""
     data_path = ''
 
-    similarity_rate = 0.6
+    command_similarity_rate = 0.6
 
     parrot = None
     scheduler = BackgroundScheduler()
@@ -45,36 +45,41 @@ class Dispatcher(object):
     SCHEDULER_MAP = {}
     GROUP = []
     FRIEND = []
-    def __init__(self, if_start_rasa=True,command_similarity_rate=0.8,parrot_similarity_rate=0.8):
-        config.init()
-        self.bot_name = config.SERVICE_CONFIG.bot_name
-        self.data_path = config.SERVICE_CONFIG.data_path
-        self.http_server_path = config.SERVICE_CONFIG.go_cqhttp_http
-        self.ws_server_path = config.SERVICE_CONFIG.go_cqhttp_websocket
+    def __init__(self,parrot_similarity_rate=0.92):
+        self.bot_name = config.bot_name
+        self.data_path = config.data_path
+        self.http_server_path = config.go_cqhttp_http
+        self.ws_server_path = config.go_cqhttp_websocket
+        self.command_similarity_rate = config.command_similarity_rate
 
         self.cqCodeBuilder = CqCodeBuilder()
         self.scheduler.start()
-        # self.parrot = Parrot(similarity_rate=parrot_similarity_rate)
-        self.parrot = None
-        self.similarity_rate = command_similarity_rate
+        if parrot_similarity_rate is None:
+            self.parrot = None
+        else:
+            self.parrot = Parrot(parrot_similarity_rate)
    
-        if if_start_rasa:
+        if config.if_start_rasa:
                 subprocess.Popen('rasa run actions', cwd='./')
                 subprocess.Popen('rasa run --enable-api', cwd='./')
         self.init()
 
     
     def init(self):
-        temp_path = os.path.join(self.data_path,'FixedReply')
-        for file in os.listdir(temp_path):
-            data = pd.read_excel(os.path.join(temp_path,file),header=None, sheet_name=0)
-            for index,row in data.iterrows():
-                if row[0] in self.fixed_response_map:
-                    self.fixed_response_map[row[0]].append(row[1])
-                else:
-                    self.fixed_response_map[row[0]] = [row[1]]
+        # 加载固定回复
+        if self.parrot is None:
+            self.parrot = {}
+            temp_path = os.path.join(self.data_path,'FixedReply')
+            for file in os.listdir(temp_path):
+                data = pd.read_excel(os.path.join(temp_path,file),header=None, sheet_name=0)
+                for index,row in data.iterrows():
+                    if row[0] in self.parrot:
+                        self.parrot[row[0]].append(row[1])
+                    else:
+                        self.parrot[row[0]] = [row[1]]
         
 
+        # 用户权限读取
         temp_path = os.path.join(self.data_path,'UserAccessControl')
         for file in os.listdir(temp_path):
             data = pd.read_excel(os.path.join(temp_path,file),header=None, sheet_name=0)
@@ -84,6 +89,7 @@ class Dispatcher(object):
                 else:
                     self.user_power_map[row[0]] = row[1]
         
+        # 群列表和用户表
         for item in requests.get(self.http_server_path+'get_group_list').json()['data']:
             self.GROUP.append(item['group_id'])
         
@@ -113,24 +119,21 @@ class Dispatcher(object):
     def fixReponseParrot(self,message_info):
         return_message = None
         if message_info['message_type'] == 'private':
-            if message_info['message'] in self.fixed_response_map:
-                return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
-            if self.parrot is not None and return_message is None:
-                return_message = self.parrot.inferred2string(message_info['message'])
-        
+                if type(self.parrot) is Parrot:
+                    return_message = random.sample(self.parrot.inferred2string(message_info['message']), 1)[0]
+                else:
+                    if message_info['message'] in self.parrot:
+                        return_message = random.sample(self.parrot[message_info['message']], 1)[0]
+
         elif message_info['message_type'] == 'group':
             if message_info['message'].startswith(self.bot_name):
                 message_info['message'] = message_info['message'].split(self.bot_name)[1]
-                if message_info['message'] in self.fixed_response_map:
-                    return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
-            elif self.parrot is not None:
-                if self.parrot_run_time:
-                    if time.time() - self.parrot_run_time > 10:
-                        return_message = self.parrot.inferred2string(message_info['message'])
-                        self.parrot_run_time = time.time()
+                if type(self.parrot) is Parrot:
+                    return_message = random.sample(self.parrot.inferred2string(message_info['message']), 1)[0]
                 else:
-                    self.parrot_run_time = time.time()
-                    return_message = self.parrot.inferred2string(message_info['message'])
+                    if message_info['message'] in self.parrot:
+                        return_message = random.sample(self.parrot[message_info['message']], 1)[0]
+
         return return_message
 
     def dispatcherServletEndPoint(self,message_info):
@@ -182,7 +185,7 @@ class Dispatcher(object):
                     return key
                 
                     # 匹配相似度 计划废弃
-                elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.similarity_rate:
+                elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.command_similarity_rate:
                     return key
                     
                     # 匹配关键词 计划废弃
