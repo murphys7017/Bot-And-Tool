@@ -1,13 +1,9 @@
+import random
 from service.dispatcher import Dispatcher
+from service.storage import Storage
 
-
-dispatcher = Dispatcher(if_start_rasa=False,similarity_rate=0.99)
-
-
-@dispatcher.QQMessageHandler('reply_build_test')
-def reply_build_test(message_info):
-    return dispatcher.cqCodeBuilder.reply("build_test", message_info)
-
+dispatcher = Dispatcher(if_start_rasa=False,parrot_similarity_rate=0.99)
+storage = Storage()
 
 @dispatcher.QQMessageHandler("测试定时任务功能")
 def add_scheduled_task(message_info):
@@ -50,16 +46,35 @@ def add_scheduled_task(message_info):
 
 @dispatcher.QQMessageHandler('Alice在吗')
 def self_handle(message_info):
-    res = '我在'+message_info['sender']['nickname'] + dispatcher.cqCodeBuilder.image(url="D:\Data\Image\emoji\-29af59a4b1fcbc27.gif")
+    res = '我在'+message_info['sender.nickname'] + dispatcher.cqCodeBuilder.image(url="D:\Data\Image\emoji\-29af59a4b1fcbc27.gif")
     return res
 
 
-@dispatcher.QQMessageHandler('测试命令')
+@dispatcher.QQMessageHandler('give me a wife','随机老婆','给我分配一个老婆吧')
 def test_handle(message_info):
-    # 自己的处理逻辑
-    return '测试命令的响应'
+    if message_info['message_type'] == 'group':
+        user_wifi_id = str(message_info['user_id'])+'-wife'
+        res = dispatcher.sendAction('get_group_member_list',{'group_id':message_info['group_id']})
+        member_dict = {}
+        for member in res['data']:
+            if member['card'] == '':
+                member['card'] = member['nickname']
+            member_dict[member['user_id']] = member
+        if user_wifi_id in storage.kv_map:
+            return '今天 '+member_dict[storage.get_value(user_wifi_id)]['card']+ '是您的老婆嗷' + dispatcher.cqCodeBuilder.at(wife_key)
+        else:
+            
+            for key in storage.kv_map:
+                if key.endswith('-wife'):
+                    member_dict.pop(storage.get_value(key))
+            wife_key = random.sample(sorted(member_dict.keys()), 1)[0]
+            wife = member_dict[wife_key]
+            storage.add_map(user_wifi_id,wife['user_id'],1,60*60*24)
+            storage.add_map(str(wife_key)+'-wife',wife['user_id'],1,60*60*24)
+            return '今天你的老婆是群友：' + member['card'] + '\n' + 'ta的昵称是：' + member['nickname'] + '\n祝99 '+dispatcher.cqCodeBuilder.at(wife_key)
+    else:
+            return "此功能只对群生效"
 
 
 dispatcher.startServer()
-
 

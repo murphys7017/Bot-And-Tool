@@ -21,7 +21,7 @@ from service.utils import get_weather_abstract_by_hefeng, get_ghs_picture
 
 from service import config
 
-SETU_TAG = ['黑丝','兽耳','萝莉','巨乳','贫乳','爱丽丝']
+
 
 
 class DafaultFallbackAction(Action):
@@ -38,6 +38,7 @@ class DafaultFallbackAction(Action):
         return []
 
 
+SETU_TAG = ['黑丝','兽耳','萝莉','巨乳','贫乳','爱丽丝']
 class GetSetuAction(Action):
 
     def name(self) -> Text:
@@ -77,4 +78,21 @@ class WeatherForm(Action):
         address = tracker.get_slot('address')
         if len(address) > 1:
             dispatcher.utter_message(get_weather_abstract_by_hefeng(address))
+        return []
+
+class GetWifiByRandom(Action):
+    def name(self) -> Text:
+        """Unique identifier of the form"""
+
+        return "action_get_wifi_by_random"
+
+    def run(
+            self,
+            dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict]:
+        """Define what the form has to do
+            after all required slots are filled"""
+
+        dispatcher.utter_message("RASA_RUN_FUNCTION_By_COMMAND:")
         return []

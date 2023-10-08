@@ -1,14 +1,25 @@
 # QQ-Bot-And-Tool
 
+### 前情提要之你怎么知道我买4070了？
+
+### 前情提要
+
+之前的老项目因为被迫沉迷毕设以及找工作，停止了bot的开发，现在工作稳定了（摸鱼摸爽了）决定重新捡起来，目前本项目有以下需要注意的点：
+
+1. 我都用python写了你还跟我谈性能？
+2. 项目主打的就是一个未来可期好吧
+3. 甭管写的无不无脑，你就说能不能用吧
+4. 我都转通信了别对我要求太高
+
+## 介绍
+
 Alice Bot是一个由Aki Polaris 和Murphy共同开发的一个设想很完美的bot，接下来我们也会尽量去完善它。
 
 目前项目只是起步阶段，文档回更新的比较慢，毕竟我平时最讨厌两件事，一件事是写文档，另一件事是写注释。
 
 目前来说完成了基础的底层功能开始设计整个bot了
 
-## 介绍
-
-
+全新的Alice其实核心内容是快速开发框架，曾经尝试参考Spring MVC的原理来做，但是看了开头我就意识到，我已经不是以前那个啥都能干的我了，遂这个框架写的有亿点简陋，不过因为工作比较闲，肯定是会继续完善的。
 
 ## 使用
 
@@ -19,6 +30,8 @@ websocket # ws客户端
 pandas # 读取excel等处理数据
 jieba # 分词，模糊匹配
 apscheduler # 定时任务
+jionlp # 工具集，计划用，但是基本没用
+rasa # 3以上，可选
 ~~~
 
 
@@ -29,26 +42,23 @@ apscheduler # 定时任务
 
 ### 例子
 
+**config.yml**
+
+~~~yml
+# 同bot名称
+assistant_id: Alice
+# 和风api的用户key
+he_feng_key: 4fd5b28a9a27428e92dd14cada996806
+go_cqhttp_http: http://localhost:8882/
+go_cqhttp_websocket: ws://localhost:8883/
+~~~
+
+**main.py**
+
 ~~~python
 from dispatcher import Dispatcher
 
-BOT_CONFIG = {
-    # 必填项
-    # 机器人名称（没啥用
-    'bot_name' : 'Alice',
-    # 保存数据的位置
-    'data_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data',
-    # gocqhttp的websocket路径和http路径
-    'cqhttp_url' : 'http://localhost:8882/',
-    'cqws_url' : 'ws://localhost:8883/',
-    
-    # 可选配置，删除的话即认为不使用对应功能
-    'parrot_model_path' : r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\ParrotModel',
-    'rasa_url' : 'http://localhost:5005/webhooks/rest/webhook',
-
-}
-
-dispatcher = Dispatcher(BOT_CONFIG)
+dispatcher = Dispatcher()
 
 @dispatcher.QQMessageHandler('测试命令1','测试命令2',...)
 def self_handle(message_info):
@@ -62,6 +72,8 @@ dispatcher.startServer()
 
 
 # Parrot
+
+## 目前因为群友聊天太混乱了，还在思考该怎么设计合理一些
 
 parrot是一个根据群友的历史聊天记录进行回复的脚本。
 
@@ -144,7 +156,9 @@ rasa 正在学着做的，好像明白这玩意咋回事了，开始开发功能
 
 ## RASA
 
-- [ ] 
+- [x] 添加天气
+- [x] 添加色图
+- [ ] 将随机老婆迁移到这里
 
 ## PARROT
 
@@ -152,12 +166,12 @@ rasa 正在学着做的，好像明白这玩意咋回事了，开始开发功能
 
 ## TOOL
 
-- [ ] 继续优化代码结构添加对群消息和私聊消息之外的其他类型的支持
-- [ ] 优化配置文件，还有一部分可以添加到配置文件中
+- [x] 继续优化代码结构添加对群消息和私聊消息之外的其他类型的支持
+- [x] 优化配置文件，还有一部分可以添加到配置文件中
 
 
 
 ## BOT
 
-- [ ] 添加随机老婆功能
+- [x] 添加随机老婆功能
 

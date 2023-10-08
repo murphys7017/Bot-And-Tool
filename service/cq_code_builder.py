@@ -38,16 +38,19 @@ class CqCodeBuilder(object):
             res = res + ',' + str(key) + '=' + str(data[key])
         res = res + ']'
         return res
+
     def builder(self,message):
         in_list = re.compile(r'[\[](.*?)[\]]')
         in_list = re.findall(in_list, message)
         for item in in_list:
             message = message.replace('['+item+']', self.image(item))
         return message
+
     def imageDoCache(self,url,cache_path=None):
         data = {}
-        data['file'] = 'file:///'+self.resourceDownload(url,cache_path)
+        data['file'] = 'file:///'+os.path.abspath(self.resourceDownload(url,cache_path))
         return self.baseBuilder('image',data)
+
     def image(self,url,is_flash=False,is_emoji=False):
         data = {}
         if is_flash:
@@ -60,7 +63,7 @@ class CqCodeBuilder(object):
             if url.startswith("http://") or url.startswith("https://"):
                 data['url'] = url
             else:
-                data['url'] = 'file:///'+url
+                data['url'] = 'file:///'+os.path.abspath(url)
             return self.baseBuilder('image',data)
 
     def reply(self,reply,message_info):

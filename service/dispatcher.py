@@ -1,7 +1,7 @@
-import json
 import requests
 import websocket
 import pandas as pd
+from pandas import json_normalize
 import os
 import random
 import jieba
@@ -10,12 +10,13 @@ import difflib
 import os
 import time
 import subprocess
+import json
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from service.parrot import Parrot
 from service.cq_code_builder import CqCodeBuilder
 from service import config
-
+config.init()
 
 CQ_PATTERN = re.compile(r'\[CQ[^\]\[]*\]')
 
@@ -44,7 +45,7 @@ class Dispatcher(object):
     SCHEDULER_MAP = {}
     GROUP = []
     FRIEND = []
-    def __init__(self, if_start_rasa=True,command_similarity_rate=0.6,parrot_similarity_rate=0.8):
+    def __init__(self, if_start_rasa=True,command_similarity_rate=0.8,parrot_similarity_rate=0.8):
         config.init()
         self.bot_name = config.SERVICE_CONFIG.bot_name
         self.data_path = config.SERVICE_CONFIG.data_path
@@ -53,7 +54,8 @@ class Dispatcher(object):
 
         self.cqCodeBuilder = CqCodeBuilder()
         self.scheduler.start()
-        self.parrot = Parrot(parrot_similarity_rate)
+        # self.parrot = Parrot(similarity_rate=parrot_similarity_rate)
+        self.parrot = None
         self.similarity_rate = command_similarity_rate
    
         if if_start_rasa:
@@ -89,18 +91,23 @@ class Dispatcher(object):
             self.FRIEND.append(item['user_id'])
 
     def getRasaResponse(self,message_info):
+        
         try:
             params = {
-                "sender": message_info['user_id'],
+                "sender": str(message_info['user_id']),
                 "message": message_info['message']
             }
+  
             return_message = requests.post( config.SERVICE_CONFIG.rasa_url, json=params).json()[0]['text']
 
             if return_message.startswith('PASS'):
                 return_message = None
+            elif return_message.startswith('RASA_RUN_FUNCTION_By_COMMAND:'):
+                return_message = self.messageHandlerMapping(message_info)
             else:
                 return return_message
-        except:
+        except Exception as e:
+            print(e)
             return None
     
     def fixReponseParrot(self,message_info):
@@ -108,7 +115,7 @@ class Dispatcher(object):
         if message_info['message_type'] == 'private':
             if message_info['message'] in self.fixed_response_map:
                 return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
-            if self.parrot and return_message is None:
+            if self.parrot is not None and return_message is None:
                 return_message = self.parrot.inferred2string(message_info['message'])
         
         elif message_info['message_type'] == 'group':
@@ -116,7 +123,7 @@ class Dispatcher(object):
                 message_info['message'] = message_info['message'].split(self.bot_name)[1]
                 if message_info['message'] in self.fixed_response_map:
                     return_message = random.sample(self.fixed_response_map[message_info['message']], 1)[0]
-            elif self.parrot:
+            elif self.parrot is not None:
                 if self.parrot_run_time:
                     if time.time() - self.parrot_run_time > 10:
                         return_message = self.parrot.inferred2string(message_info['message'])
@@ -129,86 +136,84 @@ class Dispatcher(object):
     def dispatcherServletEndPoint(self,message_info):
         """重写如果没有匹配上处理器的最终处理方法,启用rasa,更加智能,但是响应变慢,没有具体到某一个方法的权限管理
         """
+        return_message = None
         if config.SERVICE_CONFIG.activate_rasa:
             return_message = self.getRasaResponse(message_info)
         
-        if return_message:
+        if return_message is None:
             return_message = self.fixReponseParrot(message_info)
         
         if return_message:
-            return return_message.replace('{me}',self.bot_name).replace('{name}',message_info['sender']['nickname'])
+            return return_message.replace('{me}',self.bot_name).replace('{name}',message_info['sender.nickname'])
         else:
             return None
     
     def QQMessageHandler(self,*commands, level=5, activate_id=None):
-        """声明函数为消息处理函数的注解 @QQMessageHandler(identify_type=[], identify_value=[])
-        :param identify_type 字符数组  [ 'keywords' , 'similar' , 'commamd' ] 选择使用何种方式来识别命令
-        :param identify_value 字符数组 [['k1,k2,much_min_number','k1，k2，much_min_number'...] ,[string,...] ,[string,...] ,[string,...]] 具体的值，超出identify_type部分自动归到unknow类，全匹配，可能会影响性能
-        :param identity_level int 用户权限分级
+        """声明函数为消息处理函数的注解 @QQMessageHandler
         """
         def decorate(fn):
-            if level not in self.command_index:
-                    self.command_index[level] = {}
-            
-            if activate_id:
-                for key in commands:
-                    self.command_index[level][key]['function'] = fn
-                    self.command_index[level][key]['activate_id'] = activate_id
+   
+            for key in commands:
+                self.command_index[key] = {
+                    'function' : fn,
+                    'activate_id' : activate_id,
+                    'level' : level
+                }
                 
             return fn
         return decorate 
     
+
     # 获取用户权限
     def getUserPower(self,message_info):
         # 用户权限
         if message_info['user_id'] in self.user_power_map:
             return self.user_power_map[message_info['user_id']]
         else:
-            return 6
+            return 3
     
     # 根据消息获取到方法的索引
-    def getCommandByMessage(self,message,user_power):
-        for level in range(user_power+1):
-            if level in self.command_index:
-                for key in self.command_index[level]:
-                    # 匹配消息的开头
-                    if str(message).startswith(key):
-                        return key
+    def getCommandByMessage(self,message_info,user_power):
+        message = message_info['message']
+        for key in self.command_index:
+            if user_power >= self.command_index[key]['level']:
+                # 匹配消息的开头
+                if str(message).startswith(key):
+                    return key
                 
                     # 匹配相似度 计划废弃
-                    elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.similarity_rate:
-                        return key
+                elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.similarity_rate:
+                    return key
                     
                     # 匹配关键词 计划废弃
-                    elif ',' in key:
-                        keys = key.split(',')
-                        if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+                elif ',' in key:
+                    keys = key.split(',')
+                    if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
                             return key
-                    elif '，' in key:
-                        keys = key.split(',')
-                        if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
-                            return key
+                elif '，' in key:
+                    keys = key.split(',')
+                    if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+                        return key
+            elif self.command_index[key]['activate_id'] is not None:
+                if message_info['user_id'] in self.command_index[key]['activate_id']:
+                    return key
         return None
 
     # 调用方法执行
-    def runAction(self,level, command,message_info):
-        functionInfo = self.command_index[level][command]
-        if 'activate_id' in functionInfo:
-            if message_info['user_id'] in functionInfo['activate_id']:
-                return functionInfo['function'](message_info)
-            else:
-                return None
+    def runAction(self, command,message_info):
+        print("runAction")
+        return self.command_index[command]['function'](message_info)
+        
             
     # 消息分发到匹配规则的方法
     def messageHandlerMapping(self,message_info):
         """
         划定调用顺序，command精准匹配为最低级
         """
-        
         user_power = self.getUserPower(message_info)
-        command = self.getCommandByMessage(message_info['message'],user_power)
+        command = self.getCommandByMessage(message_info,user_power)
         if command:
-            return self.runAction(user_power, command,message_info)
+            return self.runAction(command,message_info)
 
         return None
     
@@ -217,12 +222,21 @@ class Dispatcher(object):
         """消息加工模块，将我们想要的消息进行加工后返回，如果不符合返回None
         """
         message_info = json.loads(message_info)
+        message_info = json_normalize(message_info).loc[0]
         if message_info['post_type'] == 'message':
             return message_info
         else:
-            print("非MESSAGE EVENT："+message_info)
+            print("非MESSAGE EVENT："+message_info.to_json())
             return None
-
+    
+    def textMesssageBuilder(self, message:str,message_info):
+        # {message_info_key}
+        in_list = re.compile(r'[\{](.*?)[\}]')
+        in_list = re.findall(in_list, message)
+        for key in in_list:
+            if key in message_info:
+                message = message.replace(key, message_info[key])
+        return message
     # 消息处理映射器
     def messageDispatcherServlet(self,message_info):
         """将接收到的消息分发到指定的函数处理并将结果返回
@@ -231,21 +245,21 @@ class Dispatcher(object):
         """
         return_message = None
         message_info = self.messageProcesse(message_info)
-        if message_info :
+        if message_info is not None:
             return_message = self.messageHandlerMapping(message_info)
             # 最终流程
             if return_message is None:
                 return_message = self.dispatcherServletEndPoint(message_info)
-        else:
-            return
         
         if return_message:
+            # {message_info_key}
+            return_message = self.textMesssageBuilder(return_message,message_info)
             self.sendMessageByMessageInfo(return_message,message_info)
+            return True
         else:
-            return
+            return False
     def sendMessageByMessageInfo(self,message,message_info):
         """Send a message
-
         """
         if message_info['message_type'] == 'private':
             self.sendPrivateMessage(message,message_info['user_id'])
@@ -329,6 +343,7 @@ class Dispatcher(object):
 
     def onMessage(self,wsapp, message_info):
         self.messageDispatcherServlet(message_info)
+
 
     def onClose(self,wsapp):
         print("on_close")

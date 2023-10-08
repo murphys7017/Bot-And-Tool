@@ -18,6 +18,13 @@ nlu:
 #     - 要色色！
 #     - 要瑟瑟！
 #     - 要涩涩！
+- intent: get_a_wife
+  examples: |
+    - 分配个老婆
+    - 来个老婆
+    - give me a wife
+    - giev me a wifi
+    - 
 - intent: get_setu_tags
   examples: |
     - 来点色图
@@ -70,6 +77,14 @@ nlu:
     - 换一件夏装你看还可不可爱
     - 讲的不是毛衣嘛！
     - 你不要再赌了！
+    - 呜呜
+    - 还有一个小时
+    - 还没下班
+    - 该打游戏了
+    - @是Aki不是Alice @夜辉辉
+    - 有的人在家休假也要做表格
+    - 咱上线的权限管理
+    - 今天你的老婆是群友：我叫马卡龙，枪马网卡人又聋 ta的昵称是：Demmons 祝99
 
 - intent: weather
   examples: |
