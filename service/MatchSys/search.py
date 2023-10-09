@@ -97,7 +97,7 @@ class TextSearch:
     name = 'text_search'
 
     def __init__(self, chatbot, **kwargs):
-        from chatterbot.comparisons import LevenshteinDistance
+        from service.MatchSys.comparisons import LevenshteinDistance
 
         self.chatbot = chatbot
 

@@ -1,8 +1,7 @@
 import os
 from dateutil import parser as date_parser
 from service.MatchSys.conversation import Statement
-from service.MatchSys.tagging import PosLemmaTagger
-from chatterbot import utils
+from service.MatchSys import utils
 
 
 class Trainer(object):
@@ -121,7 +120,7 @@ class ChatterBotCorpusTrainer(Trainer):
     """
 
     def train(self, *corpus_paths):
-        from chatterbot.corpus import load_corpus, list_corpus_files
+        from service.MatchSys.corpus import load_corpus, list_corpus_files
 
         data_file_paths = []
 

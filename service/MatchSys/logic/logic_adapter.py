@@ -1,7 +1,7 @@
-from chatterbot.adapters import Adapter
-from chatterbot.storage import StorageAdapter
-from chatterbot.search import IndexedTextSearch
-from chatterbot.conversation import Statement
+from service.MatchSys.adapters import Adapter
+from service.MatchSys.storage import StorageAdapter
+from service.MatchSys.search import IndexedTextSearch
+from service.MatchSys.conversation import Statement
 
 
 class LogicAdapter(Adapter):
@@ -33,7 +33,7 @@ class LogicAdapter(Adapter):
 
     def __init__(self, chatbot, **kwargs):
         super().__init__(chatbot, **kwargs)
-        from chatterbot.response_selection import get_first_response
+        from service.MatchSys.response_selection import get_first_response
 
         self.search_algorithm_name = kwargs.get(
             'search_algorithm_name',

@@ -1,4 +1,4 @@
-from chatterbot.storage import StorageAdapter
+from service.MatchSys.storage import StorageAdapter
 
 class SQLiteStorageAdapter4New(StorageAdapter):
     def __init__(self,**kwargs):

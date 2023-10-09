@@ -1,8 +1,8 @@
-from chatterbot.logic import LogicAdapter
-from chatterbot.conversation import Statement
-from chatterbot.exceptions import OptionalDependencyImportError
-from chatterbot import languages
-from chatterbot import parsing
+from service.MatchSys.logic import LogicAdapter
+from service.MatchSys.conversation import Statement
+from service.MatchSys.exceptions import OptionalDependencyImportError
+from service.MatchSys import languages
+from service.MatchSys import parsing
 from mathparse import mathparse
 import re
 

@@ -2,7 +2,7 @@ import logging
 from service.MatchSys.storage import StorageAdapter
 from service.MatchSys.logic import LogicAdapter
 from service.MatchSys.search import TextSearch, IndexedTextSearch
-from chatterbot import utils
+from service.MatchSys import utils
 
 
 class ChatBot(object):
@@ -13,10 +13,10 @@ class ChatBot(object):
     def __init__(self, name, **kwargs):
         self.name = name
         
-        storage_adapter = kwargs.get('storage_adapter', 'chatterbot.storage.SQLStorageAdapter')
+        storage_adapter = kwargs.get('storage_adapter', 'service.MatchSys.storage.SQLStorageAdapter')
 
         logic_adapters = kwargs.get('logic_adapters', [
-            'chatterbot.logic.BestMatch'
+            'service.MatchSys.logic.BestMatch'
         ])
 
         # Check that each adapter is a valid subclass of it's respective parent
@@ -42,7 +42,7 @@ class ChatBot(object):
 
         preprocessors = kwargs.get(
             'preprocessors', [
-                'chatterbot.preprocessors.clean_whitespace'
+                'service.MatchSys.preprocessors.clean_whitespace'
             ]
         )
 
@@ -239,7 +239,7 @@ class ChatBot(object):
         Returns the latest response in a conversation if it exists.
         Returns None if a matching conversation cannot be found.
         """
-        from chatterbot.conversation import Statement as StatementObject
+        from service.MatchSys.conversation import Statement as StatementObject
 
         conversation_statements = list(self.storage.filter(
             conversation=conversation,
