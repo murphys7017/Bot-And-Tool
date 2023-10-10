@@ -1,12 +1,10 @@
-from service.MatchSys import languages
 import jieba
 import os
 
 class ChineseTagger(object):
-    def __init__(self, language=None, user_dict=None):
+    def __init__(self, user_dict=None):
 
 
-        self.language = language or languages.ENG
         if user_dict is not None:
             jieba.load_userdict(os.path.abspath(user_dict))
 

@@ -67,16 +67,16 @@ class Dispatcher(object):
     
     def init(self):
         # 加载固定回复
-        if self.parrot is None:
-            self.parrot = {}
-            temp_path = os.path.join(self.data_path,'FixedReply')
-            for file in os.listdir(temp_path):
-                data = pd.read_excel(os.path.join(temp_path,file),header=None, sheet_name=0)
-                for index,row in data.iterrows():
-                    if row[0] in self.parrot:
-                        self.parrot[row[0]].append(row[1])
-                    else:
-                        self.parrot[row[0]] = [row[1]]
+
+        self.fixed_response_map = {}
+        temp_path = os.path.join(self.data_path,'FixedReply')
+        for file in os.listdir(temp_path):
+            data = pd.read_excel(os.path.join(temp_path,file),header=None, sheet_name=0)
+            for index,row in data.iterrows():
+                if row[0] in self.fixed_response_map:
+                    self.fixed_response_map[row[0]].append(row[1])
+                else:
+                    self.fixed_response_map[row[0]] = [row[1]]
         
 
         # 用户权限读取
@@ -115,25 +115,24 @@ class Dispatcher(object):
         except Exception as e:
             print(e)
             return None
-    
+    def getFixResponse(self, message):
+        if message in self.fixed_response_map:
+            return random.sample(self.fixed_response_map[message], 1)[0]
+        else:
+            return None
     def fixReponseParrot(self,message_info):
         return_message = None
         if message_info['message_type'] == 'private':
-                if type(self.parrot) is Parrot:
-                    return_message = random.sample(self.parrot.inferred2string(message_info['message']), 1)[0]
-                else:
-                    if message_info['message'] in self.parrot:
-                        return_message = random.sample(self.parrot[message_info['message']], 1)[0]
+            return_message = self.getFixResponse(message_info['message'])
+            if return_message is None:
+                return_message = random.sample(self.parrot.inferred2string(message_info['message']), 1)[0]
 
         elif message_info['message_type'] == 'group':
             if message_info['message'].startswith(self.bot_name):
                 message_info['message'] = message_info['message'].split(self.bot_name)[1]
-                if type(self.parrot) is Parrot:
+                return_message = self.getFixResponse(message_info['message'])
+                if return_message is None:
                     return_message = random.sample(self.parrot.inferred2string(message_info['message']), 1)[0]
-                else:
-                    if message_info['message'] in self.parrot:
-                        return_message = random.sample(self.parrot[message_info['message']], 1)[0]
-
         return return_message
 
     def dispatcherServletEndPoint(self,message_info):

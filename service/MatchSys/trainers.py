@@ -1,12 +1,11 @@
 import os
-from dateutil import parser as date_parser
 from service.MatchSys.conversation import Statement
 from service.MatchSys import utils
 
 
 class Trainer(object):
     """
-    Base class for all other trainer classes.
+    训练器基类
 
     :param boolean show_training_progress: Show progress indicators for the
            trainer. The environment variable ``CHATTERBOT_SHOW_TRAINING_PROGRESS``
@@ -70,102 +69,113 @@ class Trainer(object):
             json.dump(export, jsonfile, ensure_ascii=False)
 
 
-class ListTrainer(Trainer):
+class ChatListTrainer(Trainer):
+    """
+    [[...][...][...]...]
+    Allows a chat bot to be trained using a list of strings
+    where the list represents a conversation.
+    """
+
+    def train(self, conversations,**kwargs):
+        """
+        Train the chat bot based on the provided list of
+        statements that represents a single conversation.
+        """
+
+        source = kwargs.get('source', 'TRAIN_DATA')
+
+
+        # 上一个语句文本
+        previous_statement_text = None
+        # 上一条语句搜索文本
+        previous_statement_search_text = ''
+
+        statements_to_create = []
+
+        # TODO: 改为记录下一句
+        for conversation_count, conversation in enumerate(conversations):
+            if self.show_training_progress:
+                utils.print_progress_bar(
+                    'Chat List Trainer',
+                    conversation_count + 1, len(conversations)
+                )
+            for text in conversation:
+                statement_search_text = self.chatbot.storage.tagger.get_text_index_string(text)
+                
+                statement = self.get_preprocessed_statement(
+                    Statement(
+                        snowkey=self.chatbot.snowkey.get_id(),
+                        text=text,
+                        search_text=statement_search_text,
+                        in_response_to=previous_statement_text,
+                        search_in_response_to=previous_statement_search_text,
+                        conversation='TRAIN_DATA',
+                        type_of='CHAT',
+                        source=source,
+                    )
+                )
+
+                previous_statement_text = statement.text
+                previous_statement_search_text = statement_search_text
+
+                statements_to_create.append(statement)
+        
+        self.chatbot.storage.create_many(statements_to_create)
+        self.chatbot.docvector_tool.train(statements_to_create)
+
+class QATrainer(Trainer):
     """
     Allows a chat bot to be trained using a list of strings
     where the list represents a conversation.
     """
 
-    def train(self, conversation):
+    def train(self, conversation, **kwargs):
         """
+        {Q:[A1,A2...]}
         Train the chat bot based on the provided list of
         statements that represents a single conversation.
         """
-        previous_statement_text = None
-        previous_statement_search_text = ''
-
+        source = kwargs.get('source', 'TRAIN_DATA')
+        conversation_text = kwargs.get('conversation', 'TRAIN_DATA')
         statements_to_create = []
 
-        for conversation_count, text in enumerate(conversation):
+        for index,Q in enumerate(conversation):
             if self.show_training_progress:
                 utils.print_progress_bar(
-                    'List Trainer',
-                    conversation_count + 1, len(conversation)
+                    'QA Trainer',
+                    index + 1, len(conversation)
                 )
-
-            statement_search_text = self.chatbot.storage.tagger.get_text_index_string(text)
+            statement_search_text = self.chatbot.storage.tagger.get_text_index_string(Q)
+            snowkey = self.chatbot.snowkey.get_id(),
 
             statement = self.get_preprocessed_statement(
-                Statement(
-                    text=text,
-                    search_text=statement_search_text,
-                    in_response_to=previous_statement_text,
-                    search_in_response_to=previous_statement_search_text,
-                    conversation='training'
-                )
-            )
-
-            previous_statement_text = statement.text
-            previous_statement_search_text = statement_search_text
-
+                                    Statement(
+                                        snowkey=snowkey,
+                                        text=Q,
+                                        search_text=self.chatbot.storage.tagger.get_text_index_string(Q),
+                                        in_response_to='',
+                                        search_in_response_to='',
+                                        conversation=conversation_text,
+                                        type_of='QA',
+                                        source=source,
+                                        persona='user'
+                                    )
+                                )
             statements_to_create.append(statement)
-
+            for A in conversation[Q]:
+                statement = self.get_preprocessed_statement(
+                                    Statement(
+                                        snowkey=-snowkey,
+                                        text=A,
+                                        search_text=self.chatbot.storage.tagger.get_text_index_string(A),
+                                        in_response_to=Q,
+                                        search_in_response_to=statement_search_text,
+                                        conversation=conversation,
+                                        type_of='QA',
+                                        source=source,
+                                        persona='bot:'+self.chatbot.name
+                                    )
+                                )
+                statements_to_create.append(statement)
         self.chatbot.storage.create_many(statements_to_create)
-
-
-class ChatterBotCorpusTrainer(Trainer):
-    """
-    Allows the chat bot to be trained using data from the
-    ChatterBot dialog corpus.
-    """
-
-    def train(self, *corpus_paths):
-        from service.MatchSys.corpus import load_corpus, list_corpus_files
-
-        data_file_paths = []
-
-        # Get the paths to each file the bot will be trained with
-        for corpus_path in corpus_paths:
-            data_file_paths.extend(list_corpus_files(corpus_path))
-
-        for corpus, categories, file_path in load_corpus(*data_file_paths):
-
-            statements_to_create = []
-
-            # Train the chat bot with each statement and response pair
-            for conversation_count, conversation in enumerate(corpus):
-
-                if self.show_training_progress:
-                    utils.print_progress_bar(
-                        'Training ' + str(os.path.basename(file_path)),
-                        conversation_count + 1,
-                        len(corpus)
-                    )
-
-                previous_statement_text = None
-                previous_statement_search_text = ''
-
-                for text in conversation:
-
-                    statement_search_text = self.chatbot.storage.tagger.get_text_index_string(text)
-
-                    statement = Statement(
-                        text=text,
-                        search_text=statement_search_text,
-                        in_response_to=previous_statement_text,
-                        search_in_response_to=previous_statement_search_text,
-                        conversation='training'
-                    )
-
-                    statement.add_tags(*categories)
-
-                    statement = self.get_preprocessed_statement(statement)
-
-                    previous_statement_text = statement.text
-                    previous_statement_search_text = statement_search_text
-
-                    statements_to_create.append(statement)
-
-            if statements_to_create:
-                self.chatbot.storage.create_many(statements_to_create)
-
+        self.chatbot.docvector_tool.train(statements_to_create)

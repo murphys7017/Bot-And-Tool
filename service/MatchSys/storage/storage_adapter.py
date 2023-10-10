@@ -1,5 +1,3 @@
-import logging
-from service.MatchSys import languages
 from service.MatchSys.tagging import ChineseTagger
 
 
@@ -13,15 +11,10 @@ class StorageAdapter(object):
         """
         Initialize common attributes shared by all storage adapters.
 
-        :param str tagger_language: The language that the tagger uses to remove stopwords.
+        :param str user_dict: 
         """
-        self.logger = kwargs.get('logger', logging.getLogger(__name__))
 
-        Tagger = kwargs.get('tagger', ChineseTagger)
-
-        self.tagger = Tagger(language=kwargs.get(
-            'tagger_language', languages.ENG
-        ))
+        self.tagger = ChineseTagger(user_dict=kwargs.get('user_dict',None))
 
     def get_model(self, model_name):
         """
@@ -147,13 +140,13 @@ class StorageAdapter(object):
             'The `update` method is not implemented by this adapter.'
         )
 
-    def get_random(self):
-        """
-        Returns a random statement from the database.
-        """
-        raise self.AdapterMethodNotImplementedError(
-            'The `get_random` method is not implemented by this adapter.'
-        )
+    # def get_random(self):
+    #     """
+    #     Returns a random statement from the database.
+    #     """
+    #     raise self.AdapterMethodNotImplementedError(
+    #         'The `get_random` method is not implemented by this adapter.'
+    #     )
 
     def drop(self):
         """

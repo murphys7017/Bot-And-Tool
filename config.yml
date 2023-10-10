@@ -13,6 +13,18 @@ go_cqhttp_websocket: ws://localhost:8883/
 if_start_rasa: False
 command_similarity_rate: 0.8
 parrot_similarity_rate: 0.92
+
+#语句文本可以包含的最大字符长度。
+STATEMENT_TEXT_MAX_LENGTH: 100
+
+# 对话文本标签可以包含的最大字符长度
+CONVERSATION_LABEL_MAX_LENGTH: 32
+
+# The maximum length of text that can be stored in the persona field of the statement model.
+PERSONA_MAX_LENGTH: 50
+
+# The maximum length of characters that the name of a tag can contain
+TAG_NAME_MAX_LENGTH: 50
 # Configuration for Rasa NLU.
 # https://rasa.com/docs/rasa/nlu/components/
 

@@ -2,8 +2,9 @@ import logging
 from service.MatchSys.storage import StorageAdapter
 from service.MatchSys.logic import LogicAdapter
 from service.MatchSys.search import TextSearch, IndexedTextSearch
-from service.MatchSys import utils
-
+from service.MatchSys.snowkey import IdWorker
+from service.MatchSys.utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module
+from service import config
 
 class ChatBot(object):
     """
@@ -12,6 +13,9 @@ class ChatBot(object):
 
     def __init__(self, name, **kwargs):
         self.name = name
+
+        self.snowkey = IdWorker()
+       
         
         storage_adapter = kwargs.get('storage_adapter', 'service.MatchSys.storage.SQLStorageAdapter')
 
@@ -20,12 +24,12 @@ class ChatBot(object):
         ])
 
         # Check that each adapter is a valid subclass of it's respective parent
-        utils.validate_adapter_class(storage_adapter, StorageAdapter)
+        validate_adapter_class(storage_adapter, StorageAdapter)
 
         # Logic adapters used by the chat bot
         self.logic_adapters = []
 
-        self.storage = utils.initialize_class(storage_adapter, **kwargs)
+        self.storage = initialize_class(storage_adapter, **kwargs)
 
         primary_search_algorithm = IndexedTextSearch(self, **kwargs)
         text_search_algorithm = TextSearch(self, **kwargs)
@@ -36,25 +40,28 @@ class ChatBot(object):
         }
 
         for adapter in logic_adapters:
-            utils.validate_adapter_class(adapter, LogicAdapter)
-            logic_adapter = utils.initialize_class(adapter, self, **kwargs)
+            validate_adapter_class(adapter, LogicAdapter)
+            logic_adapter = initialize_class(adapter, self, **kwargs)
             self.logic_adapters.append(logic_adapter)
 
         preprocessors = kwargs.get(
             'preprocessors', [
-                'service.MatchSys.preprocessors.clean_whitespace'
+                'jionlp.clean_text'
             ]
         )
+        
 
         self.preprocessors = []
 
         for preprocessor in preprocessors:
-            self.preprocessors.append(utils.import_module(preprocessor))
+            self.preprocessors.append(import_module(preprocessor))
 
         self.logger = kwargs.get('logger', logging.getLogger(__name__))
 
         # Allow the bot to save input it receives so that it can learn
         self.read_only = kwargs.get('read_only', False)
+
+        self.docvector_tool = Doc2VecTool(self.storage)
 
     def get_response(self, statement=None, **kwargs):
         """

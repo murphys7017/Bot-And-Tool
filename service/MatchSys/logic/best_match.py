@@ -1,5 +1,5 @@
 from service.MatchSys.logic import LogicAdapter
-from service.MatchSys import filters
+from service.MatchSys import utils
 
 
 class BestMatch(LogicAdapter):
@@ -40,7 +40,7 @@ class BestMatch(LogicAdapter):
             closest_match.text, input_statement.text, closest_match.confidence
         ))
 
-        recent_repeated_responses = filters.get_recent_repeated_responses(
+        recent_repeated_responses = utils.get_recent_repeated_responses(
             self.chatbot,
             input_statement.conversation
         )

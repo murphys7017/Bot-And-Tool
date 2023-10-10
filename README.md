@@ -115,6 +115,8 @@ dispatcher.startServer()
 
 # Parrot
 
+引入了chatterbot，不过是私人魔改版，大抵是不好使的，
+
 ## 目前因为群友聊天太混乱了，还在思考该怎么设计合理一些
 
 parrot是一个根据群友的历史聊天记录进行回复的脚本。

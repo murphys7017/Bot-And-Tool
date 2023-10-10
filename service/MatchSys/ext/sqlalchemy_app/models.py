@@ -4,8 +4,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
 
 from service.MatchSys.conversation import StatementMixin
-from service.MatchSys import constants
-
+from service import config
 
 class ModelBase(object):
     """
@@ -43,7 +42,7 @@ class Tag(Base):
     """
 
     name = Column(
-        String(constants.TAG_NAME_MAX_LENGTH),
+        String(config.TAG_NAME_MAX_LENGTH),
         unique=True
     )
 
@@ -56,17 +55,17 @@ class Statement(Base, StatementMixin):
     confidence = 0
 
     text = Column(
-        String(constants.STATEMENT_TEXT_MAX_LENGTH)
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
     )
 
     search_text = Column(
-        String(constants.STATEMENT_TEXT_MAX_LENGTH),
+        String(config.STATEMENT_TEXT_MAX_LENGTH),
         nullable=False,
         server_default=''
     )
 
     conversation = Column(
-        String(constants.CONVERSATION_LABEL_MAX_LENGTH),
+        String(config.CONVERSATION_LABEL_MAX_LENGTH),
         nullable=False,
         server_default=''
     )
@@ -83,18 +82,18 @@ class Statement(Base, StatementMixin):
     )
 
     in_response_to = Column(
-        String(constants.STATEMENT_TEXT_MAX_LENGTH),
+        String(config.STATEMENT_TEXT_MAX_LENGTH),
         nullable=True
     )
 
     search_in_response_to = Column(
-        String(constants.STATEMENT_TEXT_MAX_LENGTH),
+        String(config.STATEMENT_TEXT_MAX_LENGTH),
         nullable=False,
         server_default=''
     )
 
     persona = Column(
-        String(constants.PERSONA_MAX_LENGTH),
+        String(config.PERSONA_MAX_LENGTH),
         nullable=False,
         server_default=''
     )

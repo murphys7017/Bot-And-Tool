@@ -2,7 +2,6 @@ from pytz import UTC
 from datetime import datetime
 from dateutil import parser as date_parser
 
-
 class StatementMixin(object):
     """
     This class has shared methods used to
@@ -11,6 +10,7 @@ class StatementMixin(object):
 
     statement_field_names = [
         'id',
+        'snowkey',
         'text',
         'search_text',
         'conversation',
@@ -19,6 +19,9 @@ class StatementMixin(object):
         'in_response_to',
         'search_in_response_to',
         'created_at',
+        'type_of',
+        'source',
+        'next_id',
     ]
 
     extra_statement_field_names = []
@@ -69,6 +72,7 @@ class Statement(StatementMixin):
 
     __slots__ = (
         'id',
+        'snowkey',
         'text',
         'search_text',
         'conversation',
@@ -77,13 +81,17 @@ class Statement(StatementMixin):
         'in_response_to',
         'search_in_response_to',
         'created_at',
+        'type_of',
+        'source',
         'confidence',
         'storage',
     )
 
+
     def __init__(self, text, in_response_to=None, **kwargs):
 
         self.id = kwargs.get('id')
+        self.snowkey = kwargs.get('snowkey','')
         self.text = str(text)
         self.search_text = kwargs.get('search_text', '')
         self.conversation = kwargs.get('conversation', '')
@@ -92,6 +100,8 @@ class Statement(StatementMixin):
         self.in_response_to = in_response_to
         self.search_in_response_to = kwargs.get('search_in_response_to', '')
         self.created_at = kwargs.get('created_at', datetime.now())
+        self.type_of = kwargs.get('type_of', 'CHAT')
+        self.source = kwargs.get('source', 'UNKNOWN')
 
         if not isinstance(self.created_at, datetime):
             self.created_at = date_parser.parse(self.created_at)
@@ -111,7 +121,7 @@ class Statement(StatementMixin):
         return self.text
 
     def __repr__(self):
-        return '<Statement text:%s>' % (self.text)
+        return '<Statement text:%s, persona:%s, type_of:%s, in_response_to:%s>' % (self.text,self.persona,self.type_of,self.in_response_to)
 
     def save(self):
         """

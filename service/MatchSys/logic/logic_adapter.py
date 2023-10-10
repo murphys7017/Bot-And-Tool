@@ -33,7 +33,7 @@ class LogicAdapter(Adapter):
 
     def __init__(self, chatbot, **kwargs):
         super().__init__(chatbot, **kwargs)
-        from service.MatchSys.response_selection import get_first_response
+        from service.MatchSys.utils import get_first_response
 
         self.search_algorithm_name = kwargs.get(
             'search_algorithm_name',
@@ -105,24 +105,7 @@ class LogicAdapter(Adapter):
         This method is called when a logic adapter is unable to generate any
         other meaningful response.
         """
-        from random import choice
-
-        if self.default_responses:
-            response = choice(self.default_responses)
-        else:
-            try:
-                response = self.chatbot.storage.get_random()
-            except StorageAdapter.EmptyDatabaseException:
-                response = input_statement
-
-        self.chatbot.logger.info(
-            'No known response to the input was found. Selecting a random response.'
-        )
-
-        # Set confidence to zero because a random response is selected
-        response.confidence = 0
-
-        return response
+        return Statement(text='NO_MATCH_PASS')
 
     @property
     def class_name(self):
