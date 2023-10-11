@@ -99,24 +99,27 @@ class ChatListTrainer(Trainer):
                     'Chat List Trainer',
                     conversation_count + 1, len(conversations)
                 )
+            previous_snowkey = None
+            snowkey = self.chatbot.snowkey.get_id()
+            next_snowkey = self.chatbot.snowkey.get_id()
             for text in conversation:
                 statement_search_text = self.chatbot.storage.tagger.get_text_index_string(text)
                 
                 statement = self.get_preprocessed_statement(
                     Statement(
-                        snowkey=self.chatbot.snowkey.get_id(),
+                        snowkey=snowkey,
                         text=text,
                         search_text=statement_search_text,
-                        in_response_to=previous_statement_text,
-                        search_in_response_to=previous_statement_search_text,
+                        next_snowkey=next_snowkey,
+                        previous_snowkey=previous_snowkey,
                         conversation='TRAIN_DATA',
                         type_of='CHAT',
                         source=source,
                     )
                 )
-
-                previous_statement_text = statement.text
-                previous_statement_search_text = statement_search_text
+                previous_snowkey = snowkey
+                snowkey = next_snowkey
+                next_snowkey = self.chatbot.snowkey.get_id()
 
                 statements_to_create.append(statement)
         
@@ -138,7 +141,8 @@ class QATrainer(Trainer):
         source = kwargs.get('source', 'TRAIN_DATA')
         conversation_text = kwargs.get('conversation', 'TRAIN_DATA')
         statements_to_create = []
-
+        previous_snowkey = 0
+        next_snowkey = 0
         for index,Q in enumerate(conversation):
             if self.show_training_progress:
                 utils.print_progress_bar(
@@ -153,10 +157,10 @@ class QATrainer(Trainer):
                                         snowkey=snowkey,
                                         text=Q,
                                         search_text=self.chatbot.storage.tagger.get_text_index_string(Q),
-                                        in_response_to='',
-                                        search_in_response_to='',
+                                        previous_snowkey=None,
+                                        next_snowkey=-snowkey,
                                         conversation=conversation_text,
-                                        type_of='QA',
+                                        type_of='Q',
                                         source=source,
                                         persona='user'
                                     )
@@ -168,10 +172,10 @@ class QATrainer(Trainer):
                                         snowkey=-snowkey,
                                         text=A,
                                         search_text=self.chatbot.storage.tagger.get_text_index_string(A),
-                                        in_response_to=Q,
-                                        search_in_response_to=statement_search_text,
+                                        previous_snowkey=snowkey,
+                                        next_snowkey=None,
                                         conversation=conversation,
-                                        type_of='QA',
+                                        type_of='A',
                                         source=source,
                                         persona='bot:'+self.chatbot.name
                                     )

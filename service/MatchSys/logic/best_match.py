@@ -23,10 +23,9 @@ class BestMatch(LogicAdapter):
         self.excluded_words = kwargs.get('excluded_words')
 
     def process(self, input_statement, additional_response_selection_parameters=None):
+        
         search_results = self.search_algorithm.search(input_statement)
-
-        # Use the input statement as the closest match if no other results are found
-        closest_match = next(search_results, input_statement)
+        
 
         # Search for the closest match to the input statement
         for result in search_results:
@@ -36,9 +35,6 @@ class BestMatch(LogicAdapter):
             if result.confidence >= self.maximum_similarity_threshold:
                 break
 
-        self.chatbot.logger.info('Using "{}" as a close match to "{}" with a confidence of {}'.format(
-            closest_match.text, input_statement.text, closest_match.confidence
-        ))
 
         recent_repeated_responses = utils.get_recent_repeated_responses(
             self.chatbot,

@@ -1,6 +1,6 @@
 from service.MatchSys.adapters import Adapter
 from service.MatchSys.storage import StorageAdapter
-from service.MatchSys.search import IndexedTextSearch
+from service.MatchSys.search import IndexedTextSearch,DocVectorSearch
 from service.MatchSys.conversation import Statement
 
 
@@ -37,7 +37,7 @@ class LogicAdapter(Adapter):
 
         self.search_algorithm_name = kwargs.get(
             'search_algorithm_name',
-            IndexedTextSearch.name
+            DocVectorSearch.name
         )
 
         self.search_algorithm = self.chatbot.search_algorithms[
@@ -79,24 +79,23 @@ class LogicAdapter(Adapter):
 
     def process(self, statement, additional_response_selection_parameters=None):
         """
-        Override this method and implement your logic for selecting a response to an input statement.
+        覆盖此方法并实现选择输入语句响应的逻辑。
+        应该返回置信度值和所选的响应语句。
+        置信度值表示逻辑适配器的准确度
+        期望选择的响应为。置信度分数用于选择
+        来自多个逻辑适配器的最佳响应。
 
-        A confidence value and the selected response statement should be returned.
-        The confidence value represents a rating of how accurate the logic adapter
-        expects the selected response to be. Confidence scores are used to select
-        the best response from multiple logic adapters.
+        置信值应该是介于0和1之间的数字，其中0是
+        最低的置信水平，1是最高的。
 
-        The confidence value should be a number between 0 and 1 where 0 is the
-        lowest confidence level and 1 is the highest.
+        参数语句:逻辑适配器要处理的输入语句。
+        :type statement:语句
 
-        :param statement: An input statement to be processed by the logic adapter.
-        :type statement: Statement
+        :param additional_response_selection_parameters:配置时使用的参数
+        筛选结果以从中选择响应。
+        addtional_response_selection_parameters: dict
 
-        :param additional_response_selection_parameters: Parameters to be used when
-            filtering results to choose a response from.
-        :type additional_response_selection_parameters: dict
-
-        :rtype: Statement
+        : rtype:声明
         """
         raise self.AdapterMethodNotImplementedError()
 

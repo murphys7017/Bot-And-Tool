@@ -16,8 +16,8 @@ class StatementMixin(object):
         'conversation',
         'persona',
         'tags',
-        'in_response_to',
-        'search_in_response_to',
+        'previous_snowkey',
+        'next_snowkey',
         'created_at',
         'type_of',
         'source',
@@ -63,7 +63,7 @@ class StatementMixin(object):
 
         return data
 
-
+# TODO: 添加对话打分，区分对话的好坏
 class Statement(StatementMixin):
     """
     A statement represents a single spoken entity, sentence or
@@ -78,17 +78,18 @@ class Statement(StatementMixin):
         'conversation',
         'persona',
         'tags',
-        'in_response_to',
-        'search_in_response_to',
+        'previous_snowkey',
+        'next_snowkey',
         'created_at',
         'type_of',
         'source',
         'confidence',
         'storage',
+        'total_statements'
     )
 
 
-    def __init__(self, text, in_response_to=None, **kwargs):
+    def __init__(self, text, **kwargs):
 
         self.id = kwargs.get('id')
         self.snowkey = kwargs.get('snowkey','')
@@ -97,8 +98,8 @@ class Statement(StatementMixin):
         self.conversation = kwargs.get('conversation', '')
         self.persona = kwargs.get('persona', '')
         self.tags = kwargs.pop('tags', [])
-        self.in_response_to = in_response_to
-        self.search_in_response_to = kwargs.get('search_in_response_to', '')
+        self.next_snowkey = kwargs.get('next_snowkey', '')
+        self.previous_snowkey = kwargs.get('previous_snowkey', '')
         self.created_at = kwargs.get('created_at', datetime.now())
         self.type_of = kwargs.get('type_of', 'CHAT')
         self.source = kwargs.get('source', 'UNKNOWN')
@@ -116,15 +117,18 @@ class Statement(StatementMixin):
         self.confidence = 0
 
         self.storage = None
+        self.total_statements = []
 
     def __str__(self):
         return self.text
 
     def __repr__(self):
-        return '<Statement text:%s, persona:%s, type_of:%s, in_response_to:%s>' % (self.text,self.persona,self.type_of,self.in_response_to)
+        return '<Statement text:%s, persona:%s, type_of:%s>' % (self.text,self.persona,self.type_of)
 
     def save(self):
         """
         Save the statement in the database.
         """
         self.storage.update(self)
+    def set_total_statements(self,total_statements):
+        self.total_statements = total_statements

@@ -7,10 +7,6 @@ from difflib import SequenceMatcher
 
 class Comparator:
 
-    def __init__(self, language):
-
-        self.language = language
-
     def __call__(self, statement_a, statement_b):
         return self.compare(statement_a, statement_b)
 

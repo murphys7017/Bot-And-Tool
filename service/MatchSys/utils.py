@@ -273,7 +273,7 @@ class Doc2VecTool(object):
     def inferred2string(self,msg):
         inferred_vector = self.model.infer_vector(doc_words=self.remove_stopwords(msg))
         
-        sims = self.model.dv.most_similar([inferred_vector],topn=5)
+        sims = self.model.dv.most_similar([inferred_vector],topn=20)
         res = []
         for sim in sims:
             if sim[1] >= self.parrot_similarity_rate:
