@@ -6,12 +6,47 @@ from service.MatchSys.search import TextSearch, IndexedTextSearch, DocVectorSear
 from service.MatchSys.snowkey import IdWorker
 from service.MatchSys.utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module
 from service import config
+import difflib
+import jieba
 
+class HandleFunction(object):
+    def __init__(self, func, **kwargs) -> None:
+        self.command_similarity_rate = kwargs.get('command_similarity_rate',0.9)
+        self.commands = kwargs.get('commands',[])
+        self.level = kwargs.get('level',5)
+        self.activate_id = kwargs.get('activate_id', [])
+        self.function_id = kwargs.get('function_id', func.__name__)
+        self.func = func
+    def check_power(self):
+        return True
+    def match(self,message):
+        for key in self.commands:
+            # 匹配消息的开头
+            if str(message).startswith(key):
+                return True
+            
+            # 匹配相似度 计划废弃
+            elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.command_similarity_rate:
+                return True
+                    
+            # 匹配关键词 计划废弃
+            elif ',' in key:
+                keys = key.split(',')
+                if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+                    return True
+            elif '，' in key:
+                keys = key.split(',')
+                if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+                    return True
+    def handle(self, message):
+        return self.func(message)
+        
 class MatchSys(object):
     """
     一个修改自chatterbot的对话匹配系统
     """
     def __init__(self, name, **kwargs):
+   
         self.name = name
         self.snowkey = IdWorker()
 
@@ -58,23 +93,44 @@ class MatchSys(object):
         self.history_tool = Queue(maxsize=10)
         # TODO: 将来可能的对话
         self.predict_dialogue = []
-    def handle_function_declaration(self,*commands, **kwargs):
+    
 
-        """声明函数为消息处理函数的注解 @QQMessageHandler
+        
+    def handle_function_declaration(self,*commands, **kwargs):
+        """声明函数为消息处理函数的注解 @handle_function_declaration
         """
         def decorate(fn):
-            level = kwargs.get('level',5)
-            activate_id = kwargs.get('activate_id', [])
-            function_id = kwargs.get('function_id', fn.__name__)
             for key in commands:
-                self.command_index[key] = {
-                    'function' : fn,
-                    'activate_id' : activate_id,
-                    'level' : level
-                }
+                self.command_index[key] = HandleFunction(func=fn, **kwargs)
                 
             return fn
         return decorate 
+    # TODO: 消息处理封装逻辑
+    def processing_message(self, message=None):
+        """将收到的消息封装为statement类型的
+
+        Args:
+            {
+                snowkey message id
+                text message text
+                type_of message  
+                source  from qq(group or friend) or other  
+            }
+            
+            conversation
+            persona
+            previous_snowkey
+            
+            source
+            matedata
+
+        Raises:
+            self.ChatBotException: _description_
+
+        Returns:
+            _type_: _description_
+        """
+        pass
     
     def get_response(self, statement=None, **kwargs):
         """

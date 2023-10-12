@@ -85,6 +85,7 @@ class Statement(StatementMixin):
         'source',
         'confidence',
         'storage',
+        'matedata',
         'total_statements'
     )
 
@@ -93,7 +94,7 @@ class Statement(StatementMixin):
 
         self.id = kwargs.get('id')
         self.snowkey = kwargs.get('snowkey','')
-        self.text = str(text)
+        self.text = kwargs.get('text',text)
         self.search_text = kwargs.get('search_text', '')
         self.conversation = kwargs.get('conversation', '')
         self.persona = kwargs.get('persona', '')
@@ -103,6 +104,7 @@ class Statement(StatementMixin):
         self.created_at = kwargs.get('created_at', datetime.now())
         self.type_of = kwargs.get('type_of', 'CHAT')
         self.source = kwargs.get('source', 'UNKNOWN')
+        self.matedata = kwargs.get('matedata', {})
 
         if not isinstance(self.created_at, datetime):
             self.created_at = date_parser.parse(self.created_at)
