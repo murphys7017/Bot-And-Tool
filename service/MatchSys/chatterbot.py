@@ -1,4 +1,5 @@
 import logging
+from queue import Queue
 from service.MatchSys.storage import StorageAdapter
 from service.MatchSys.logic import LogicAdapter
 from service.MatchSys.search import TextSearch, IndexedTextSearch, DocVectorSearch
@@ -54,8 +55,26 @@ class MatchSys(object):
         self.docvector_tool = Doc2VecTool(self.storage)
 
         # TODO: 记录历史对话，更好的支持匹配
-        self.history_tool = None
+        self.history_tool = Queue(maxsize=10)
+        # TODO: 将来可能的对话
+        self.predict_dialogue = []
+    def handle_function_declaration(self,*commands, **kwargs):
 
+        """声明函数为消息处理函数的注解 @QQMessageHandler
+        """
+        def decorate(fn):
+            level = kwargs.get('level',5)
+            activate_id = kwargs.get('activate_id', [])
+            function_id = kwargs.get('function_id', fn.__name__)
+            for key in commands:
+                self.command_index[key] = {
+                    'function' : fn,
+                    'activate_id' : activate_id,
+                    'level' : level
+                }
+                
+            return fn
+        return decorate 
     
     def get_response(self, statement=None, **kwargs):
         """

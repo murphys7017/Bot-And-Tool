@@ -353,3 +353,19 @@ class Dispatcher(object):
     def startServer(self):
         self.wsapp = websocket.WebSocketApp(self.ws_server_path,on_open=self.onOpen,on_message=self.onMessage,on_close=self.onClose)
         self.wsapp.run_forever()
+
+
+class MessageStatement(object):
+    # 消息的唯一标识
+    id = None
+    # 消息内容
+    text = None
+    # 消息类型
+    type = None
+    # 消息来源
+    source = None
+    # 收到时间
+    reception_time = None
+
+    metadate = None
+
