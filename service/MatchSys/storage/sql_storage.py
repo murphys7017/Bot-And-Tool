@@ -93,17 +93,17 @@ class SQLStorageAdapter(StorageAdapter):
 
         self._session_finish(session)
 
-    def get_statement_by_snowkey(self, snowkey):
+    def get_statement_by_id(self, id):
         Statement = self.get_model('statement')
         session = self.Session()
 
-        query = session.query(Statement).filter_by(snowkey=snowkey).first()
+        query = session.query(Statement).filter_by(id=id).first()
         return query
-    def get_statements_by_snowkey(self, snowkey):
+    def get_statements_by_id(self, id):
         Statement = self.get_model('statement')
         session = self.Session()
 
-        query = session.query(Statement).filter_by(snowkey=snowkey).all()
+        query = session.query(Statement).filter_by(id=id).all()
         return query
 
     def filter(self, **kwargs):

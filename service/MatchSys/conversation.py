@@ -2,6 +2,8 @@ from pytz import UTC
 from datetime import datetime
 from dateutil import parser as date_parser
 
+from service.MatchSys.utils_bk import IdWorker
+
 class StatementMixin(object):
     """
     This class has shared methods used to
@@ -10,18 +12,19 @@ class StatementMixin(object):
 
     statement_field_names = [
         'id',
-        'snowkey',
         'text',
         'search_text',
+        'intent',
         'conversation',
         'persona',
         'tags',
-        'previous_snowkey',
-        'next_snowkey',
+        'previous_id',
+        'next_id',
         'created_at',
         'type_of',
         'source',
-        'next_id',
+        'mark',
+        'matedata',
     ]
 
     extra_statement_field_names = []
@@ -72,21 +75,23 @@ class Statement(StatementMixin):
 
     __slots__ = (
         'id',
-        'snowkey',
         'text',
         'search_text',
+        'intent',
         'conversation',
         'persona',
         'tags',
-        'previous_snowkey',
-        'next_snowkey',
+        'previous_id',
+        'next_id',
         'created_at',
         'type_of',
         'source',
+        'mark',
         'confidence',
         'storage',
         'matedata',
-        'total_statements'
+        'history_statements',
+        'predict_statements'
     )
 
 
@@ -99,12 +104,14 @@ class Statement(StatementMixin):
         self.conversation = kwargs.get('conversation', '')
         self.persona = kwargs.get('persona', '')
         self.tags = kwargs.pop('tags', [])
-        self.next_snowkey = kwargs.get('next_snowkey', '')
-        self.previous_snowkey = kwargs.get('previous_snowkey', '')
+        self.next_id = kwargs.get('next_id', '')
+        self.previous_id = kwargs.get('previous_id', '')
         self.created_at = kwargs.get('created_at', datetime.now())
         self.type_of = kwargs.get('type_of', 'CHAT')
         self.source = kwargs.get('source', 'UNKNOWN')
         self.matedata = kwargs.get('matedata', {})
+        self.intent = kwargs.get('intent', {})
+        self.mark = kwargs.get('mark', 1)
 
         if not isinstance(self.created_at, datetime):
             self.created_at = date_parser.parse(self.created_at)
@@ -119,7 +126,9 @@ class Statement(StatementMixin):
         self.confidence = 0
 
         self.storage = None
-        self.total_statements = []
+
+        self.history_statements = []
+        self.predict_statements = []
 
     def __str__(self):
         return self.text

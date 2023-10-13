@@ -68,8 +68,9 @@ def initialize():
     global TAG_NAME_MAX_LENGTH
 
     data_path = './data/'
-
-    parrot_model_path = './data/ParrotModel/'
+    # './data/ParrotModel/'
+    # D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\service\MatchSys\Data
+    parrot_model_path = r'D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\service\MatchSys\Data'
 
     rasa_url = 'http://localhost:5005/webhooks/rest/webhook'
 

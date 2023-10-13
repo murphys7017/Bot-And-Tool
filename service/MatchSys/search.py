@@ -1,3 +1,6 @@
+from random import choice
+
+
 class IndexedTextSearch:
     """
     :param statement_comparison_function: A comparison class.
@@ -20,9 +23,7 @@ class IndexedTextSearch:
             LevenshteinDistance
         )
 
-        self.compare_statements = statement_comparison_function(
-            language=self.chatbot.storage.tagger.language
-        )
+        self.compare_statements = statement_comparison_function()
 
         self.search_page_size = kwargs.get(
             'search_page_size', 1000
@@ -93,22 +94,17 @@ class DocVectorSearch:
         from service.MatchSys.comparisons import LevenshteinDistance
 
         self.chatbot = chatbot
+        
+        # 对话CHAT类型上下文长度 5 句，问答类型QA 只有多个回答，任务TASK类型追溯整个对话
+        self.history_length = kwargs.get('history_length', 5)
 
-        statement_comparison_function = kwargs.get(
-            'statement_comparison_function',
-            LevenshteinDistance
-        )
     def search(self, input_statement, **additional_parameters):
         """
         先从数据库中找出相似的输入语句，在根据输入语句从数据库中查询出对应的对话，再根据相似度返回某一对话
         """
         self.chatbot.logger.info('Beginning search for doc_vector_search')
-        # 对话CHAT类型上下文长度 5 句，问答类型QA 只有多个回答，任务TASK类型追溯整个对话
-        history_length = 5
 
         input_statement_list = self.chatbot.docvector_tool.inferred2string(input_statement.text)
-
-        best_confidence_so_far = 0
 
         self.chatbot.logger.info('Processing search results')
 
@@ -118,36 +114,27 @@ class DocVectorSearch:
         for statement in input_statement_list:
             
             if statement.type_of == 'Q':
-                result =  self.chatbot.storage.get_statements_by_snowkey(-statement.snowkey)
-                statement.total_statements = result
+                result =  self.chatbot.storage.get_statements_by_id(-statement.id)
+                statement.predict_statements = result
                 
             if statement.type_of == 'CHAT':
-                result = [statement]
+                statement.history_statements.append(statement)
                 next_statement = statement
                 per_statement = statement
-                for i in range(history_length):
-                    per_statement = self.chatbot.storage.get_statements_by_snowkey(per_statement.previous_snowkey)
-                    next_statement = self.chatbot.storage.get_statements_by_snowkey(next_statement.next_snowkey)
-                    result.insert(0,per_statement)
-                    result.append(next_statement)
+                for i in range(self.history_length):
+                    per_statement = self.chatbot.storage.get_statement_by_id(per_statement.previous_id)
+                    next_statement = self.chatbot.storage.get_statement_by_id(next_statement.next_id)
+                    statement.history_statements.append(per_statement)
+                    statement.predict_statements.append(next_statement)
                 statement.total_statements = result
             if statement.type_of == 'TASK':
                 pass
 
-            # TODO: 与历史对话做对比获取最终的置信度
-            confidence = self.compare_statements(input_statement, statement)
 
-            if confidence > best_confidence_so_far:
-                best_confidence_so_far = confidence
-                statement.confidence = confidence
-
-                self.chatbot.logger.info('Similar text found: {} {}'.format(
-                    statement.text, confidence
-                ))
-
-                all_result.append(statement)
             # TODO：返回置信度最高的那个
         return all_result
+
+
 
 
 class TextSearch:
@@ -171,10 +158,8 @@ class TextSearch:
             'statement_comparison_function',
             LevenshteinDistance
         )
+        self.compare_statements = statement_comparison_function()
 
-        self.compare_statements = statement_comparison_function(
-            language=self.chatbot.storage.tagger.language
-        )
 
         self.search_page_size = kwargs.get(
             'search_page_size', 1000

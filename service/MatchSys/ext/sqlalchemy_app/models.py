@@ -47,12 +47,32 @@ class Tag(Base):
     )
 
 
-class Statement(Base, StatementMixin):
+class Intent(Base):
+        'intent',
+
+class Statement(StatementMixin):
     """
     A Statement represents a sentence or phrase.
     """
 
-    confidence = 0
+    @declared_attr
+    def __tablename__(cls):
+        """
+        Return the lowercase class name as the name of the table.
+        """
+        return cls.__name__.lower()
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    previous_id = Column(
+        Integer
+    )
+    next_id = Column(
+        Integer
+    )
 
     text = Column(
         String(config.STATEMENT_TEXT_MAX_LENGTH)
@@ -73,6 +93,18 @@ class Statement(Base, StatementMixin):
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now()
+    )
+    type_of = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    source = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    matedata = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    mark = Column(
+        Integer
     )
 
     tags = relationship(

@@ -43,10 +43,7 @@ class LogicAdapter(Adapter):
         self.search_algorithm = self.chatbot.search_algorithms[
             self.search_algorithm_name
         ]
-
-        self.maximum_similarity_threshold = kwargs.get(
-            'maximum_similarity_threshold', 0.95
-        )
+        self.min_confidence = kwargs.get('min_confidence',0.95)
 
         # By default, select the first available response
         self.select_response = kwargs.get(
