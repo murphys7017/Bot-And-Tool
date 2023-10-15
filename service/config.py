@@ -66,6 +66,7 @@ def initialize():
     global CONVERSATION_LABEL_MAX_LENGTH
     global PERSONA_MAX_LENGTH
     global TAG_NAME_MAX_LENGTH
+    global TAG_TYPE_MAX_LENGTH
 
     data_path = './data/'
     # './data/ParrotModel/'
@@ -104,3 +105,4 @@ def initialize():
         CONVERSATION_LABEL_MAX_LENGTH = data['CONVERSATION_LABEL_MAX_LENGTH']
         PERSONA_MAX_LENGTH = data['PERSONA_MAX_LENGTH']
         TAG_NAME_MAX_LENGTH = data['TAG_NAME_MAX_LENGTH']
+        TAG_TYPE_MAX_LENGTH = data['TAG_NAME_MAX_LENGTH']

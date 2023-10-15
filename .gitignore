@@ -125,3 +125,4 @@ tests/data/stanza
 .vscode
 .rasa
 *.ipynb
+data/LtpModel/pytorch_model.bin

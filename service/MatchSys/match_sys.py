@@ -8,7 +8,6 @@ from service.MatchSys.utils_bk import IdWorker
 from service.MatchSys.utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module
 from service import config
 import difflib
-import jieba
 config.initialize()
 
 class HandleFunction(object):
@@ -32,14 +31,14 @@ class HandleFunction(object):
                 return True
                     
             # 匹配关键词 计划废弃
-            elif ',' in key:
-                keys = key.split(',')
-                if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
-                    return True
-            elif '，' in key:
-                keys = key.split(',')
-                if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
-                    return True
+            # elif ',' in key:
+            #     keys = key.split(',')
+            #     if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+            #         return True
+            # elif '，' in key:
+            #     keys = key.split(',')
+            #     if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
+            #         return True
     def handle(self, input_statement,matchsys):
         res = self.func(input_statement)
         if isinstance(res, str):

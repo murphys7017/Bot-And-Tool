@@ -6,7 +6,6 @@ from service.MatchSys.utils_bk import IdWorker
 from service.MatchSys.utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module
 from service import config
 import difflib
-import jieba
 
 class ChatBot(object):
     """

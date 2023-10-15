@@ -46,11 +46,17 @@ class Tag(Base):
         unique=True
     )
 
+    type_of = Column(
+        String(config.TAG_TYPE_MAX_LENGTH)
+    )
 
-class Intent(Base):
-        'intent',
+    predicate = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
 
-class Statement(StatementMixin):
+
+
+class Statement(Base, StatementMixin):
     """
     A Statement represents a sentence or phrase.
     """
@@ -83,6 +89,10 @@ class Statement(StatementMixin):
         nullable=False,
         server_default=''
     )
+    intent = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH),
+        server_default=''
+    )
 
     conversation = Column(
         String(config.CONVERSATION_LABEL_MAX_LENGTH),
@@ -113,16 +123,6 @@ class Statement(StatementMixin):
         backref='statements'
     )
 
-    in_response_to = Column(
-        String(config.STATEMENT_TEXT_MAX_LENGTH),
-        nullable=True
-    )
-
-    search_in_response_to = Column(
-        String(config.STATEMENT_TEXT_MAX_LENGTH),
-        nullable=False,
-        server_default=''
-    )
 
     persona = Column(
         String(config.PERSONA_MAX_LENGTH),
