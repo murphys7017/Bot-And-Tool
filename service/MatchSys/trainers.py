@@ -92,7 +92,7 @@ class ChatListTrainer(Trainer):
 
         statements_to_create = []
 
-        # TODO: 改为记录下一句
+
         for conversation_count, conversation in enumerate(conversations):
             if self.show_training_progress:
                 utils.print_progress_bar(

@@ -55,4 +55,4 @@ class BestMatch(LogicAdapter):
 
             return response
 
-        return self.default_responses(input_statement)
+        return input_statement

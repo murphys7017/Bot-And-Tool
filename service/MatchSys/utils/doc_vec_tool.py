@@ -4,21 +4,25 @@ Match Core
 class Doc2VecTool(object):
     model = None
   
-    def __init__(self,storage):
+    def __init__(self,storage, **kwargs):
         import os
         from service import config
         from gensim.models import Doc2Vec
 
         self.storage = storage
-        self.parrot_similarity_rate = config.parrot_similarity_rate
-        if os.path.exists(config.parrot_model_path):
-            self.model = Doc2Vec.load(os.path.abspath(config.parrot_model_path))
+        
+        self.parrot_similarity_rate = kwargs.get('parrot_similarity_rate',config.parrot_similarity_rate)
+
+        text_vec_model_path = kwargs.get('text_vec_model_path', config.text_vec_model_path)
+
+        if os.path.exists(text_vec_model_path):
+            self.model = Doc2Vec.load(os.path.abspath(text_vec_model_path))
             print("Parrot started")
 
-    def remove_stopwords(self,str1):
-        import jieba
+    def remove_stopwords(self,words):
+        # import jieba
         # return remove_stopwords(jieba.lcut(str1))
-        return jieba.lcut_for_search(str1)
+        return words
     def train(self,statements):
         if self.model is not None:
             self.update_model(statements)
@@ -49,8 +53,8 @@ class Doc2VecTool(object):
         import os
         self.model.save(os.path.join(save_path,'model.pkl'))
         
-    def inferred2string(self,msg):
-        inferred_vector = self.model.infer_vector(doc_words=self.remove_stopwords(msg))
+    def inferred2string(self,words):
+        inferred_vector = self.model.infer_vector(doc_words=self.remove_stopwords(words))
         
         sims = self.model.dv.most_similar([inferred_vector],topn=20)
         res = []

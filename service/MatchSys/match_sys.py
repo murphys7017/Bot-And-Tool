@@ -4,8 +4,9 @@ from service.MatchSys.message_adapter import MessageAdapter
 from service.MatchSys.storage import StorageAdapter
 from service.MatchSys.logic import LogicAdapter
 from service.MatchSys.search import TextSearch, IndexedTextSearch, DocVectorSearch
-from service.MatchSys.utils_bk import IdWorker
-from service.MatchSys.utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module
+from service.MatchSys.utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module,IdWorker
+
+from ltp import LTP
 from service import config
 import difflib
 config.initialize()
@@ -57,9 +58,11 @@ class MatchSys(object):
     def __init__(self, name, **kwargs):
         """
         **kwargs:
-            message_adapter
-                model_path
+            message_adapter:
+                ltp_model_path
                 user_dictionary
+            doc2vce:
+                text_vec_model_path
             storage_adapter
             logic_adapters
             preprocessors
@@ -68,6 +71,10 @@ class MatchSys(object):
         self.name = name
         self.snowflake = IdWorker(1,1,1)
         self.max_time_between_conversations = kwargs.get('max_time_between_conversations',30)
+
+        # ltp tool
+        ltp_model_path = kwargs.get('ltp_model_path', 'LTP/small')
+        kwargs['ltp'] = LTP(ltp_model_path)
 
         # 初始化预处理程序
         # preprocessors = kwargs.get('preprocessors', ['jionlp.clean_text'])
@@ -112,14 +119,16 @@ class MatchSys(object):
         self.read_only = kwargs.get('read_only', False)
 
         # 文本向量化工具
-        self.docvector_tool = Doc2VecTool(self.storage)
 
-        # TODO: 记录历史对话，更好的支持匹配
+        self.docvector_tool = Doc2VecTool(self.storage,**kwargs)
+
+  
         self.history = []
-        # TODO: 将来可能的对话
+
         self.predict_dialogue = []
         self.command_handles = []
 
+       
         
     def handle_function_declaration(self, **kwargs):
         """声明函数为消息处理函数的注解 @handle_function_declaration
@@ -155,8 +164,8 @@ class MatchSys(object):
             response = self.generate_response(input_statement, additional_response_selection_parameters)
 
 
-        if not self.read_only:
-            self.learn_response(input_statement)
+        # if not self.read_only:
+            # self.learn_response(input_statement)
 
             # Save the response generated for the input
             # self.storage.create(**response.serialize())
@@ -175,11 +184,12 @@ class MatchSys(object):
         """
         # 将输入添加到历史对话中
         self.history = self.history[:15]
-        if (input_statement.created_at - self.history[0].created_at).seconds > self.max_time_between_conversations:
-            self.history.insert(0,input_statement)
-        else:
-            input_statement.previous_id = self.history[0].id
-            self.history.insert(0,input_statement)
+        if len(self.history) > 0:
+            if (input_statement.created_at - self.history[0].created_at).seconds > self.max_time_between_conversations:
+                self.history.insert(0,input_statement)
+            else:
+                input_statement.previous_id = self.history[0].id
+                self.history.insert(0,input_statement)
         
         response_statement = None
 

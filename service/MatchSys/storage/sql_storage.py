@@ -200,10 +200,10 @@ class SQLStorageAdapter(StorageAdapter):
         if 'search_text' not in kwargs:
             kwargs['search_text'] = self.tagger.get_text_index_string(kwargs['text'])
 
-        if 'search_in_response_to' not in kwargs:
-            in_response_to = kwargs.get('in_response_to')
-            if in_response_to:
-                kwargs['search_in_response_to'] = self.tagger.get_text_index_string(in_response_to)
+        # if 'search_in_response_to' not in kwargs:
+        #     in_response_to = kwargs.get('in_response_to')
+        #     if in_response_to:
+        #         kwargs['search_in_response_to'] = self.tagger.get_text_index_string(in_response_to)
 
         statement = Statement(**kwargs)
 
@@ -250,19 +250,17 @@ class SQLStorageAdapter(StorageAdapter):
             if not statement.search_text:
                 statement_model_object.search_text = self.tagger.get_text_index_string(statement.text)
 
-            if not statement.search_in_response_to and statement.in_response_to:
-                statement_model_object.search_in_response_to = self.tagger.get_text_index_string(statement.in_response_to)
+            # if not statement.search_in_response_to and statement.in_response_to:
+            #     statement_model_object.search_in_response_to = self.tagger.get_text_index_string(statement.in_response_to)
             
-            exists = self.statements.find_one({
-                'text': statement_data['text'],
-                'search_text': statement_data['search_text'],
-                'conversation': statement_data['conversation'],
-                'persona': statement_data['persona'],
-                'in_response_to': statement_data['in_response_to'],
-                'search_in_response_to': statement_data['search_in_response_to'],
-            })
-            if exists:
-                continue
+            # exists = self.statements.find_one({
+            #     'text': statement_data['text'],
+            #     'search_text': statement_data['search_text'],
+            #     'conversation': statement_data['conversation'],
+            #     'persona': statement_data['persona'],
+            # })
+            # if exists:
+            #     continue
    
             new_tags = set(tag_data) - set(create_tags.keys())
 
@@ -324,8 +322,8 @@ class SQLStorageAdapter(StorageAdapter):
 
             record.search_text = self.tagger.get_text_index_string(statement.text)
 
-            if statement.in_response_to:
-                record.search_in_response_to = self.tagger.get_text_index_string(statement.in_response_to)
+            # if statement.in_response_to:
+            #     record.search_in_response_to = self.tagger.get_text_index_string(statement.in_response_to)
 
             for tag_name in statement.get_tags():
                 tag = session.query(Tag).filter_by(name=tag_name).first()

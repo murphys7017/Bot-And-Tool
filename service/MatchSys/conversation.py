@@ -1,8 +1,7 @@
+import json
 from pytz import UTC
 from datetime import datetime
 from dateutil import parser as date_parser
-
-from service.MatchSys.utils_bk import IdWorker
 
 class StatementMixin(object):
     """
@@ -98,7 +97,6 @@ class Statement(StatementMixin):
     def __init__(self, text, **kwargs):
 
         self.id = kwargs.get('id')
-        self.snowkey = kwargs.get('snowkey','')
         self.text = kwargs.get('text',text)
         self.search_text = kwargs.get('search_text', '')
         self.conversation = kwargs.get('conversation', '')
@@ -109,9 +107,19 @@ class Statement(StatementMixin):
         self.created_at = kwargs.get('created_at', datetime.now())
         self.type_of = kwargs.get('type_of', 'CHAT')
         self.source = kwargs.get('source', 'UNKNOWN')
-        self.matedata = kwargs.get('matedata', {})
+        self.matedata = kwargs.get('matedata', '')
         self.intent = kwargs.get('intent', {})
         self.mark = kwargs.get('mark', 1)
+
+        if isinstance(self.intent, str):
+            pass
+        else:
+            self.intent = json.dumps(self.intent)
+
+        if isinstance(self.matedata, str):
+            pass
+        else:
+            self.matedata = json.dumps(self.matedata)
 
         if not isinstance(self.created_at, datetime):
             self.created_at = date_parser.parse(self.created_at)

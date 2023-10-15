@@ -1,6 +1,5 @@
 from service.MatchSys.conversation import Statement
-from service.MatchSys.utils_bk import IdWorker
-from service.MatchSys.utils import import_module
+from service.MatchSys.utils import import_module, IdWorker
 
 
 class MessageAdapter(object):
@@ -10,7 +9,7 @@ class MessageAdapter(object):
     """
     def __init__(self, **kwargs) -> None:
         from service.MatchSys.conversation import Statement
-        from ltp import LTP
+
         self.snowflake = IdWorker(1,1,1)
 
         # 初始化预处理程序
@@ -19,8 +18,12 @@ class MessageAdapter(object):
         for preprocessor in preprocessors:
             self.preprocessors.append(import_module(preprocessor))
         
-        model_path = kwargs.get('model_path', 'LTP/small')
-        self.ltp = LTP(model_path)
+
+        self.ltp = kwargs.get('ltp', None)
+        if self.ltp is None:
+            from ltp import LTP
+            ltp_model_path = kwargs.get('ltp_model_path', 'LTP/small')
+            self.ltp = LTP(ltp_model_path)
 
         user_dictionary = kwargs.get('user_dictionary',[])
         if len(user_dictionary) > 0:
@@ -59,6 +62,7 @@ class MessageAdapter(object):
         raise self.AdapterMethodNotImplementedError()
 
     def text_process(self, text,**kwargs):
+        import json
         """Return Search Text
 
         Args:
@@ -75,18 +79,53 @@ class MessageAdapter(object):
 
         kwargs['text'] = text
         # 分词
-        result = self.ltp.pipeline('你觉得A怎么样', tasks = ["cws","srl"])
+        result = self.ltp.pipeline(text, tasks=["cws","srl"])
+        # TODO: 重新编写
         kwargs['search_text'] = ' '.join(result.cws)
-
-        t = result.srl[0]
-        for item in result.srl:
-            if len(t['arguments']) > len(item['arguments']):
-                t = item
-        kwargs['intent'] = t
-
+        if len(result.srl) > 0:
+            t = result.srl[0]
+            for item in result.srl:
+                if len(t['arguments']) > len(item['arguments']):
+                    t = item
+            kwargs['intent'] = json.dumps(t)
 
         input_statement = Statement(**kwargs)
         return input_statement
+    def text_process_list(self, text_list,**kwargs):
+        import json
+        """Return Search Text
+
+        Args:
+            text (_type_): _description_
+
+        Returns:
+            _type_: Statement
+        """
+        # 清理文本
+        # for preprocessor in self.preprocessors:
+        #     text = preprocessor(text)
+        input_statements = []
+        result = self.ltp.pipeline(text_list, tasks=["cws","srl"])
+        for cws,srl in  zip(result.cws,result.srl):
+            kwargs['id'] = self.snowflake.get_id()
+
+            kwargs['text'] = ''.join(cws)
+
+            kwargs['search_text'] = ' '.join(cws)
+
+            # TODO: 重新编写
+            try:
+                if len(srl) > 0:
+                    t = srl[0]
+                    for item in srl:
+                        if len(t['arguments']) > len(item['arguments']):
+                            t = item
+                    kwargs['intent'] = json.dumps(t)
+            except:
+                print(srl)
+            input_statements.append(Statement(**kwargs))
+        return input_statements
+        
 
     @property
     def class_name(self):
@@ -114,3 +153,13 @@ class TextMessageAdapter(MessageAdapter):
 
         # 获取Statement
         return input_statement
+    def process_list(self, message_list, **kwargs):
+        # read the message
+
+        # Get Text message
+        input_statements = self.text_process_list(message_list,**kwargs)
+
+        # Add Other Info
+
+        # 获取Statement
+        return input_statements

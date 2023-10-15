@@ -104,7 +104,7 @@ class DocVectorSearch:
         """
         self.chatbot.logger.info('Beginning search for doc_vector_search')
 
-        input_statement_list = self.chatbot.docvector_tool.inferred2string(input_statement.text)
+        input_statement_list = self.chatbot.docvector_tool.inferred2string(input_statement.search_text.split(' '))
 
         self.chatbot.logger.info('Processing search results')
 

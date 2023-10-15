@@ -2,7 +2,7 @@ import logging
 from service.MatchSys.storage import StorageAdapter
 from service.MatchSys.logic import LogicAdapter
 from service.MatchSys.search import TextSearch, IndexedTextSearch, DocVectorSearch
-from service.MatchSys.utils_bk import IdWorker
+from service.MatchSys.utils import IdWorker
 from service.MatchSys.utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module
 from service import config
 import difflib

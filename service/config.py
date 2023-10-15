@@ -61,6 +61,8 @@ def initialize():
     global if_start_rasa
     global command_similarity_rate
     global parrot_similarity_rate
+    global text_vec_model_path
+    global STOP_WORDS_PATH
 
     global STATEMENT_TEXT_MAX_LENGTH
     global CONVERSATION_LABEL_MAX_LENGTH
@@ -101,8 +103,12 @@ def initialize():
         command_similarity_rate = data['command_similarity_rate']
         parrot_similarity_rate = data['parrot_similarity_rate']
 
+        text_vec_model_path = data['text_vec_model_path']
+
         STATEMENT_TEXT_MAX_LENGTH = data['STATEMENT_TEXT_MAX_LENGTH']
         CONVERSATION_LABEL_MAX_LENGTH = data['CONVERSATION_LABEL_MAX_LENGTH']
         PERSONA_MAX_LENGTH = data['PERSONA_MAX_LENGTH']
         TAG_NAME_MAX_LENGTH = data['TAG_NAME_MAX_LENGTH']
         TAG_TYPE_MAX_LENGTH = data['TAG_NAME_MAX_LENGTH']
+
+        STOP_WORDS_PATH = data['stop_words_path']
