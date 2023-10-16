@@ -31,14 +31,10 @@ class Doc2VecTool(object):
 
     def build_tokenzied(self,statements):
         from gensim.models.doc2vec import TaggedDocument
-        from service.MatchSys.conversation import Statement
-
         tokenized = []
         for statement in statements:
-            statement_data = statement.serialize()
-            statement_model_object = Statement(**statement_data)
-            if statement_model_object.snowkey > 0:
-                tokenized.append(TaggedDocument(statement_model_object.search_text.split(' '),tags=[statement_model_object.snowkey]))
+            if statement.id > 0:
+                tokenized.append(TaggedDocument(statement.search_text.split(' '),tags=[statement.id,statement.text]))
         return tokenized
     
     def train_model(self, statements):
@@ -46,12 +42,12 @@ class Doc2VecTool(object):
 
         tokenized = self.build_tokenzied(statements)
 
-        self.model = Doc2Vec(tokenized,min_count=1,window=4,sample=1e-3,negative=5,workers=4)
-        self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=100)
+        self.model = Doc2Vec(tokenized,vector_size=30,epochs=50,min_count=1,window=10,sample=1e-3,negative=5,workers=10)
+        self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=50)
     
     def save_model(self,save_path):
         import os
-        self.model.save(os.path.join(save_path,'model.pkl'))
+        self.model.save(os.path.join(save_path))
         
     def inferred2string(self,words):
         inferred_vector = self.model.infer_vector(doc_words=self.remove_stopwords(words))
@@ -60,7 +56,7 @@ class Doc2VecTool(object):
         res = []
         for sim in sims:
             if sim[1] >= self.parrot_similarity_rate:
-                res.append( self.storage.get_statement_by_snowkey(sim[0]))
+                res.append( self.storage.get_statement_by_id(sim[0]))
         return res
     
     def update_model(self,statements):

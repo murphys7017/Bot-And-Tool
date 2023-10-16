@@ -2,6 +2,125 @@ import json
 from pytz import UTC
 from datetime import datetime
 from dateutil import parser as date_parser
+class SemanticBase(object):
+    statement_field_names = [
+        'id',
+        'A0',
+        'A1',
+        'A2',
+        'A3',
+        'A4',
+        'ADV',
+        'BNF',
+        'CND',
+        'CRD',
+        'DGR',
+        'DIR',
+        'DIS',
+        'EXT',
+        'FRQ',
+        'LOC',
+        'MNR',
+        'PRP',
+        'QTY',
+        'TMP',
+        'TPC',
+        'predicate',
+        'PSR',
+        'PSE',
+    ]
+
+    extra_statement_field_names = []
+
+    def get_statement_field_names(self):
+        """
+        Return the list of field names for the statement.
+        """
+        return self.statement_field_names + self.extra_statement_field_names
+
+    def serialize(self):
+        """
+        :returns: A dictionary representation of the statement object.
+        :rtype: dict
+        """
+        data = {}
+
+        for field_name in self.get_statement_field_names():
+            format_method = getattr(self, 'get_{}'.format(
+                field_name
+            ), None)
+
+            if format_method:
+                data[field_name] = format_method()
+            else:
+                data[field_name] = getattr(self, field_name)
+
+        return data
+class Semantic(SemanticBase):
+    statement_field_names = [
+        'id',
+        'A0',
+        'A1',
+        'A2',
+        'A3',
+        'A4',
+        'ADV',
+        'BNF',
+        'CND',
+        'CRD',
+        'DGR',
+        'DIR',
+        'DIS',
+        'EXT',
+        'FRQ',
+        'LOC',
+        'MNR',
+        'PRP',
+        'QTY',
+        'TMP',
+        'TPC',
+        'predicate',
+        'PSR',
+        'PSE',
+    ]
+
+    extra_statement_field_names = []
+
+    def __init__(self,data):
+        arguments = data['arguments']
+        for field in self.statement_field_names:
+            setattr(self, field, '')
+        for item in arguments:
+            setattr(self, item[0][-3:], item[1])
+        self.predicate = data['predicate']
+
+    
+
+    def get_statement_field_names(self):
+        """
+        Return the list of field names for the statement.
+        """
+        return self.statement_field_names + self.extra_statement_field_names
+
+    def serialize(self):
+        """
+        :returns: A dictionary representation of the statement object.
+        :rtype: dict
+        """
+        data = {}
+
+        for field_name in self.get_statement_field_names():
+            format_method = getattr(self, 'get_{}'.format(
+                field_name
+            ), None)
+
+            if format_method:
+                data[field_name] = format_method()
+            else:
+                data[field_name] = getattr(self, field_name)
+
+        return data
+
 
 class StatementMixin(object):
     """
@@ -14,6 +133,7 @@ class StatementMixin(object):
         'text',
         'search_text',
         'intent',
+        'semantics',
         'conversation',
         'persona',
         'tags',
@@ -77,6 +197,7 @@ class Statement(StatementMixin):
         'text',
         'search_text',
         'intent',
+        'semantics',
         'conversation',
         'persona',
         'tags',
@@ -110,7 +231,7 @@ class Statement(StatementMixin):
         self.matedata = kwargs.get('matedata', '')
         self.intent = kwargs.get('intent', {})
         self.mark = kwargs.get('mark', 1)
-
+        self.semantics = kwargs.get('semantics',[])
         if isinstance(self.intent, str):
             pass
         else:

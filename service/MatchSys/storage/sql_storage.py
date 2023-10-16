@@ -60,6 +60,12 @@ class SQLStorageAdapter(StorageAdapter):
         """
         from service.MatchSys.ext.sqlalchemy_app.models import Tag
         return Tag
+    def get_semantic_model(self):
+        """
+        Return the conversation model.
+        """
+        from service.MatchSys.ext.sqlalchemy_app.models import Semantic
+        return Semantic
 
     def model_to_object(self, statement):
         from service.MatchSys.conversation import Statement as StatementObject
@@ -197,8 +203,8 @@ class SQLStorageAdapter(StorageAdapter):
 
         tags = set(kwargs.pop('tags', []))
 
-        if 'search_text' not in kwargs:
-            kwargs['search_text'] = self.tagger.get_text_index_string(kwargs['text'])
+        # if 'search_text' not in kwargs:
+        #     kwargs['search_text'] = self.tagger.get_text_index_string(kwargs['text'])
 
         # if 'search_in_response_to' not in kwargs:
         #     in_response_to = kwargs.get('in_response_to')
@@ -234,6 +240,7 @@ class SQLStorageAdapter(StorageAdapter):
         """
         Statement = self.get_model('statement')
         Tag = self.get_model('tag')
+        Semantic = self.get_model('semantic')
 
         session = self.Session()
 
@@ -244,24 +251,10 @@ class SQLStorageAdapter(StorageAdapter):
 
             statement_data = statement.serialize()
             tag_data = statement_data.pop('tags', [])
+            semantics_data = statement_data.pop('semantics',[])
 
             statement_model_object = Statement(**statement_data)
 
-            if not statement.search_text:
-                statement_model_object.search_text = self.tagger.get_text_index_string(statement.text)
-
-            # if not statement.search_in_response_to and statement.in_response_to:
-            #     statement_model_object.search_in_response_to = self.tagger.get_text_index_string(statement.in_response_to)
-            
-            # exists = self.statements.find_one({
-            #     'text': statement_data['text'],
-            #     'search_text': statement_data['search_text'],
-            #     'conversation': statement_data['conversation'],
-            #     'persona': statement_data['persona'],
-            # })
-            # if exists:
-            #     continue
-   
             new_tags = set(tag_data) - set(create_tags.keys())
 
             if new_tags:
@@ -282,7 +275,15 @@ class SQLStorageAdapter(StorageAdapter):
                     create_tags[tag_name] = tag
 
                 statement_model_object.tags.append(tag)
+            
+
+            semantics = []
+            for semantic in semantics_data:
+                semantics.append(Semantic(**semantic.serialize()))
+
+            statement_model_object.semantics = semantics
             create_statements.append(statement_model_object)
+        
 
         session.add_all(create_statements)
         session.commit()

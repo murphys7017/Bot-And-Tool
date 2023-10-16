@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
 
-from service.MatchSys.conversation import StatementMixin
+from service.MatchSys.conversation import StatementMixin,SemanticBase
 from service import config
 
 class ModelBase(object):
@@ -35,6 +35,14 @@ tag_association_table = Table(
     Column('statement_id', Integer, ForeignKey('statement.id'))
 )
 
+semantic_association_table = Table(
+    'semantic_association',
+    Base.metadata,
+    Column('semantic_id', Integer, ForeignKey('semantic.id')),
+    Column('statement_id', Integer, ForeignKey('statement.id'))
+)
+
+
 
 class Tag(Base):
     """
@@ -51,6 +59,92 @@ class Tag(Base):
     )
 
     predicate = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+
+class Semantic(Base, SemanticBase):
+    @declared_attr
+    def __tablename__(cls):
+        """
+        Return the lowercase class name as the name of the table.
+        """
+        return cls.__name__.lower()
+    id = Column(
+        Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    predicate = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    A0 = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    A1 = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    A2 = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    A3 = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    A4 = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    ADV = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    BNF = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    CND = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    CRD = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    DGR = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    DIR = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    DIS = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    EXT = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    FRQ = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    LOC = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    MNR = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    PRP = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    QTY = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    TMP = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    TPC = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    PRD = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    PSR = Column(
+        String(config.STATEMENT_TEXT_MAX_LENGTH)
+    )
+    PSE = Column(
         String(config.STATEMENT_TEXT_MAX_LENGTH)
     )
 
@@ -93,6 +187,7 @@ class Statement(Base, StatementMixin):
         String(config.STATEMENT_TEXT_MAX_LENGTH),
         server_default=''
     )
+    
 
     conversation = Column(
         String(config.CONVERSATION_LABEL_MAX_LENGTH),
@@ -122,7 +217,11 @@ class Statement(Base, StatementMixin):
         secondary=lambda: tag_association_table,
         backref='statements'
     )
-
+    semantics = relationship(
+        'Semantic',
+        secondary=lambda: semantic_association_table,
+        backref='statements'
+    )
 
     persona = Column(
         String(config.PERSONA_MAX_LENGTH),
