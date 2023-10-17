@@ -103,7 +103,7 @@ class DocVectorSearch:
         先从数据库中找出相似的输入语句，在根据输入语句从数据库中查询出对应的对话，再根据相似度返回某一对话
         """
         self.chatbot.logger.info('Beginning search for doc_vector_search')
-
+        # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement
         input_statement_list = self.chatbot.docvector_tool.inferred2string(input_statement.search_text.split(' '))
 
         self.chatbot.logger.info('Processing search results')

@@ -3,13 +3,12 @@ Match Core
 """
 class Doc2VecTool(object):
     model = None
-  
-    def __init__(self,storage, **kwargs):
+    TaggedDocument = None
+    def __init__(self, **kwargs):
         import os
         from service import config
         from gensim.models import Doc2Vec
-
-        self.storage = storage
+        from gensim.models.doc2vec import TaggedDocument
         
         self.parrot_similarity_rate = kwargs.get('parrot_similarity_rate',config.parrot_similarity_rate)
 
@@ -20,9 +19,9 @@ class Doc2VecTool(object):
             print("Parrot started")
 
     def remove_stopwords(self,words):
-        # import jieba
-        # return remove_stopwords(jieba.lcut(str1))
-        return words
+        import jieba
+        return jieba.lcut_for_search(words)
+        # return words
     def train(self,statements):
         if self.model is not None:
             self.update_model(statements)
@@ -34,7 +33,7 @@ class Doc2VecTool(object):
         tokenized = []
         for statement in statements:
             if statement.id > 0:
-                tokenized.append(TaggedDocument(statement.search_text.split(' '),tags=[statement.id,statement.text]))
+                tokenized.append(TaggedDocument(statement.search_text.split(' '),tags=[str(statement.id),statement.text]))
         return tokenized
     
     def train_model(self, statements):
@@ -42,21 +41,21 @@ class Doc2VecTool(object):
 
         tokenized = self.build_tokenzied(statements)
 
-        self.model = Doc2Vec(tokenized,vector_size=30,epochs=50,min_count=1,window=10,sample=1e-3,negative=5,workers=10)
-        self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=50)
+        self.model = Doc2Vec(tokenized,dm=1, window=8, min_count=5, workers=4)
+        self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=10)
     
     def save_model(self,save_path):
         import os
-        self.model.save(os.path.join(save_path))
+        self.model.save(os.path.abspath(save_path))
         
     def inferred2string(self,words):
-        inferred_vector = self.model.infer_vector(doc_words=self.remove_stopwords(words))
+        inferred_vector = self.model.infer_vector(doc_words=words)
         
         sims = self.model.dv.most_similar([inferred_vector],topn=20)
         res = []
         for sim in sims:
             if sim[1] >= self.parrot_similarity_rate:
-                res.append( self.storage.get_statement_by_id(sim[0]))
+                res.append(sim[0])
         return res
     
     def update_model(self,statements):

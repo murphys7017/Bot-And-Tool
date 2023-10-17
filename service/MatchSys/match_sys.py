@@ -63,6 +63,7 @@ class MatchSys(object):
                 user_dictionary
             doc2vce:
                 text_vec_model_path
+                parrot_similarity_rate
             storage_adapter
             logic_adapters
             preprocessors
@@ -119,8 +120,7 @@ class MatchSys(object):
         self.read_only = kwargs.get('read_only', False)
 
         # 文本向量化工具
-
-        self.docvector_tool = Doc2VecTool(self.storage,**kwargs)
+        self.docvector_tool = Doc2VecTool(**kwargs)
 
   
         self.history = []
