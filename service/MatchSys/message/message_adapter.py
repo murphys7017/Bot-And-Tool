@@ -1,5 +1,5 @@
-from .object_definition import Statement,Semantic
-from .utils import import_module, IdWorker
+from ..object_definition import Statement,Semantic
+from ..utils import import_module, IdWorker
 
 
 class MessageAdapter(object):
@@ -56,7 +56,7 @@ class MessageAdapter(object):
         """
         将statement转化为外部需要的形式
         """
-        pass
+        return statement.text
 
     def process(self, message, **kwargs):
         """
@@ -143,32 +143,3 @@ class MessageAdapter(object):
         This is typically used for logging and debugging.
         """
         return str(self.__class__.__name__)
-
-class TextMessageAdapter(MessageAdapter):
-    """
-    This is an abstract class that represents the interface
-    that all message adapters should implement.
-    """
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-
-    def process(self, message, **kwargs):
-        # read the message
-
-        # Get Text message
-        input_statement = self.text_process(text=message,**kwargs)
-
-        # Add Other Info
-
-        # 获取Statement
-        return input_statement
-    def process_list(self, message_list, **kwargs):
-        # read the message
-
-        # Get Text message
-        input_statements = self.text_process_list(message_list,**kwargs)
-
-        # Add Other Info
-
-        # 获取Statement
-        return input_statements

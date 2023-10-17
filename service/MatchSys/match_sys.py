@@ -1,6 +1,6 @@
 import logging
 from .object_definition import Statement
-from .message_adapter import MessageAdapter
+from .message import MessageAdapter
 from .storage import StorageAdapter
 from .logic import LogicAdapter
 from .search import TextSearch, IndexedTextSearch, DocVectorSearch
@@ -67,6 +67,7 @@ class MatchSys(object):
             storage_adapter
             logic_adapters
             preprocessors
+            max_time_between_conversations
         """
    
         self.name = name
@@ -85,16 +86,20 @@ class MatchSys(object):
 
 
         # 初始化消息处理器
-        message_adapter_name = kwargs.get('message_adapter', 'service.MatchSys.message_adapter.TextMessageAdapter')
-        validate_adapter_class(message_adapter_name, MessageAdapter)
-        self.message_adapter = initialize_class(message_adapter_name, **kwargs)
+        self.message_adapters = []
+        message_adapter_names = kwargs.get('message_adapter', ['.message.TextMessageAdapter'])
+        for message_adapter_name in message_adapter_names:
+            validate_adapter_class(message_adapter_name, MessageAdapter)
+            self.message_adapters.append( initialize_class(message_adapter_name, **kwargs))
 
         # 初始化数据存储
-        storage_adapter_name = kwargs.get('storage_adapter', 'service.MatchSys.storage.SQLStorageAdapter')
+        storage_adapter_name = kwargs.get('storage_adapter', '.storage.SQLStorageAdapter')
         validate_adapter_class(storage_adapter_name, StorageAdapter)
         self.storage = initialize_class(storage_adapter_name, **kwargs)
 
         # 初始化匹配逻辑
+        search_names = kwargs.get('search_algorithms', ['.search.DocVectorSearch'])
+        self.search_handlers = []
         primary_search_algorithm = IndexedTextSearch(self, **kwargs)
         text_search_algorithm = TextSearch(self, **kwargs)
         vector_search_algorithm = DocVectorSearch(self, **kwargs)
@@ -154,10 +159,19 @@ class MatchSys(object):
         :param persist_values_to_response: MatchSys生成的应当保存到response中的值
         :type persist_values_to_response: dict
         """
-        if self.message_adapter.check(message):
-            input_statement = self.message_adapter.process(message)
-      
 
+        
+        input_statement = None
+        response = None
+        message_adapter = None
+        # 匹配一个合适的消息处理器,请务必区分清每个处理器的判断规则，负责只会使用最后一个符合的
+        for messageadapter in self.message_adapters:
+            if messageadapter.check(message):
+                message_adapter = messageadapter
+        input_statement = message_adapter.process(message)
+
+        if input_statement is not None:
+      
             additional_response_selection_parameters = kwargs.pop('additional_response_selection_parameters', {})
             persist_values_to_response = kwargs.pop('persist_values_to_response', {})
             # 生成响应Statement
@@ -170,7 +184,7 @@ class MatchSys(object):
             # Save the response generated for the input
             # self.storage.create(**response.serialize())
 
-        return response
+        return message_adapter.process_2_output(response)
     
     def generate_response(self, input_statement, additional_response_selection_parameters=None):
         """
