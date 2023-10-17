@@ -1,7 +1,7 @@
 from service.MatchSys.adapters import Adapter
 from service.MatchSys.storage import StorageAdapter
 from service.MatchSys.search import IndexedTextSearch,DocVectorSearch
-from service.MatchSys.conversation import Statement
+from service.MatchSys.object_definition import Statement
 
 
 class LogicAdapter(Adapter):

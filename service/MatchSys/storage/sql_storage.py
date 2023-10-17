@@ -68,7 +68,7 @@ class SQLStorageAdapter(StorageAdapter):
         return Semantic
 
     def model_to_object(self, statement):
-        from service.MatchSys.conversation import Statement as StatementObject
+        from service.MatchSys.object_definition import Statement as StatementObject
 
         return StatementObject(**statement.serialize())
 

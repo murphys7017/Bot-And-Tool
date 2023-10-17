@@ -1,5 +1,5 @@
 import os
-from service.MatchSys.conversation import Statement
+from service.MatchSys.object_definition import Statement
 from service.MatchSys import utils
 
 

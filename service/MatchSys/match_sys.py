@@ -1,5 +1,5 @@
 import logging
-from service.MatchSys.conversation import Statement
+from service.MatchSys.object_definition import Statement
 from service.MatchSys.message_adapter import MessageAdapter
 from service.MatchSys.storage import StorageAdapter
 from service.MatchSys.logic import LogicAdapter

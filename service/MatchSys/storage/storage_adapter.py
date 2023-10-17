@@ -41,7 +41,7 @@ class StorageAdapter(object):
         return get_model_method()
 
     def get_statement_object(self):
-        from service.MatchSys.conversation import Statement
+        from service.MatchSys.object_definition import Statement
 
         StatementModel = self.get_model('statement')
 
