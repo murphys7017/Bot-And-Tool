@@ -5,6 +5,7 @@ from random import choice
 
 class BestMatch(LogicAdapter):
     """
+    TODO:将从search获取到的几个可能的对话进行比对，返回最有可能的一个
     A logic adapter that returns a response based on known responses to
     the closest matches to the input statement.
 

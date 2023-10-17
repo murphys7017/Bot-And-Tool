@@ -42,6 +42,9 @@ class MessageAdapter(object):
             super().__init__(message)
 
     def check(self, message):
+        """
+        检查消息是否符合处理器要求，返回True or False
+        """
         if message is None or message == '':
             raise self.ChatBotException(
                 'Either a statement object or a "text" keyword '
@@ -49,8 +52,16 @@ class MessageAdapter(object):
             )
         
         return True
+    def process_2_output(self, statement):
+        """
+        将statement转化为外部需要的形式
+        """
+        pass
 
     def process(self, message, **kwargs):
+        """
+        解析消息，并且将其中的文本以及其他参数封装为statement
+        """
         # read the message
 
         # Get Text message
@@ -63,7 +74,7 @@ class MessageAdapter(object):
 
     def text_process(self, text,**kwargs):
         import json
-        """Return Search Text
+        """将对话文本分词封装为statement给process
 
         Args:
             text (_type_): _description_

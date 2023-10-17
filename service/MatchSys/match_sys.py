@@ -142,7 +142,7 @@ class MatchSys(object):
     def get_response(self, message=None, **kwargs):
         """
         Return the bot's response based on the input.
-        根据输入的statement生成一个response
+        TODO:根据输入的statement生成一个response,这一步进行一些数据验证或者对话学习等，对话匹配流程开始之前和结束后的一些工作
 
         :param statement: An statement object or string.
         :returns: A response to the input.
@@ -175,7 +175,8 @@ class MatchSys(object):
     def generate_response(self, input_statement, additional_response_selection_parameters=None):
         """
         Return a response based on a given input statement.
-        根据输入的statement生成一个response
+
+        TODO:根据输入的statement生成一个response
         这一步主要完成了将逻辑处理器返回的消息构建成一个真正的消息
         逻辑处理器可能返回调用指定函数等
 
