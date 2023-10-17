@@ -1,6 +1,6 @@
-from service.MatchSys.storage.storage_adapter import StorageAdapter
-from service.MatchSys.storage.sql_storage import SQLStorageAdapter
-from service.MatchSys.object_definition import Semantic,Statement,Tag
+from .storage_adapter import StorageAdapter
+from .sql_storage import SQLStorageAdapter
+from .model_definition import Semantic,Statement,Tag
 
 
 """

@@ -1,4 +1,4 @@
-from service.MatchSys.tagging import ChineseTagger
+from ..tagging import ChineseTagger
 
 
 class StorageAdapter(object):

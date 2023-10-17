@@ -1,4 +1,4 @@
-from service.MatchSys.storage import StorageAdapter
+from .storage_adapter import StorageAdapter
 
 class SQLStorageAdapter(StorageAdapter):
     """

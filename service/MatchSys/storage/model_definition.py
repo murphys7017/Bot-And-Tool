@@ -3,7 +3,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
 
-from service.MatchSys.object_definition import StatementMixin,SemanticBase
+from ..object_definition import StatementMixin,SemanticBase
+# TODO: 修改config引入来源
 from service import config
 
 class ModelBase(object):

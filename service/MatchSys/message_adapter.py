@@ -1,5 +1,5 @@
-from service.MatchSys.object_definition import Statement,Semantic
-from service.MatchSys.utils import import_module, IdWorker
+from .object_definition import Statement,Semantic
+from .utils import import_module, IdWorker
 
 
 class MessageAdapter(object):

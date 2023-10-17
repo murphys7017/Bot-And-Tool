@@ -1,10 +1,10 @@
 import logging
-from service.MatchSys.object_definition import Statement
-from service.MatchSys.message_adapter import MessageAdapter
-from service.MatchSys.storage import StorageAdapter
-from service.MatchSys.logic import LogicAdapter
-from service.MatchSys.search import TextSearch, IndexedTextSearch, DocVectorSearch
-from service.MatchSys.utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module,IdWorker
+from .object_definition import Statement
+from .message_adapter import MessageAdapter
+from .storage import StorageAdapter
+from .logic import LogicAdapter
+from .search import TextSearch, IndexedTextSearch, DocVectorSearch
+from .utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module,IdWorker
 
 from ltp import LTP
 from service import config
