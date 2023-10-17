@@ -2,6 +2,9 @@ from .doc_vec_tool import Doc2VecTool
 from .filters import get_recent_repeated_responses
 from .snowkey import IdWorker
 from .response_selection import get_first_response, get_most_frequent_response
+"""
+这里主要保存一些工具类函数
+"""
 
 def print_progress_bar(description, iteration_counter, total_items, progress_bar_length=20):
     """

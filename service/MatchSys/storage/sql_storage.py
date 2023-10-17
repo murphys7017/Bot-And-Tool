@@ -51,20 +51,20 @@ class SQLStorageAdapter(StorageAdapter):
         """
         Return the statement model.
         """
-        from service.MatchSys.ext.sqlalchemy_app.models import Statement
+        from service.MatchSys.storage.model_definition import Statement
         return Statement
 
     def get_tag_model(self):
         """
         Return the conversation model.
         """
-        from service.MatchSys.ext.sqlalchemy_app.models import Tag
+        from service.MatchSys.storage.model_definition import Tag
         return Tag
     def get_semantic_model(self):
         """
         Return the conversation model.
         """
-        from service.MatchSys.ext.sqlalchemy_app.models import Semantic
+        from service.MatchSys.storage.model_definition import Semantic
         return Semantic
 
     def model_to_object(self, statement):
@@ -378,7 +378,7 @@ class SQLStorageAdapter(StorageAdapter):
         """
         Populate the database with the tables.
         """
-        from service.MatchSys.ext.sqlalchemy_app.models import Base
+        from service.MatchSys.storage.model_definition import Base
         Base.metadata.create_all(self.engine)
 
     def _session_finish(self, session, statement_text=None):

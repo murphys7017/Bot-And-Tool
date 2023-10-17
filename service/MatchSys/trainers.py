@@ -36,6 +36,8 @@ class Trainer(object):
         This method must be overridden by a child class.
         """
         raise self.TrainerInitializationException()
+    def save(self, *args, **kwargs):
+        pass
 
     class TrainerInitializationException(Exception):
         """

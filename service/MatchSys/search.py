@@ -1,5 +1,14 @@
 from random import choice
 
+class AbstractSearch(object):
+    name = "Abstract Search"
+    def __init__(self,matchsys,**kwargs):
+        self.matchsys = matchsys
+        # 对话CHAT类型上下文长度 5 句，问答类型QA 只有多个回答，任务TASK类型追溯整个对话
+        self.history_length = kwargs.get('history_length', 5)
+    
+    def search(self,input_statement, **additional_parameters):
+        pass
 
 class IndexedTextSearch:
     """
@@ -105,7 +114,9 @@ class DocVectorSearch:
         """
         self.matchsys.logger.info('Beginning search for doc_vector_search')
         # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement
-        input_statement_list = self.matchsys.docvector_tool.inferred2string(input_statement.search_text.split(' '))
+        input_statement_list = []
+        for input_statement_id in self.matchsys.docvector_tool.inferred2string(input_statement.search_text.split(' ')):
+            input_statement_list.append(self.matchsys.storage.get_statement_by_id(input_statement_id[0]))
 
         self.matchsys.logger.info('Processing search results')
 
