@@ -12,10 +12,10 @@ class Doc2VecTool(object):
         
         self.parrot_similarity_rate = kwargs.get('parrot_similarity_rate',config.parrot_similarity_rate)
 
-        text_vec_model_path = kwargs.get('text_vec_model_path', config.text_vec_model_path)
+        self.text_vec_model_path = kwargs.get('text_vec_model_path', config.text_vec_model_path)
 
-        if os.path.exists(text_vec_model_path):
-            self.model = Doc2Vec.load(os.path.abspath(text_vec_model_path))
+        if os.path.exists(self.text_vec_model_path):
+            self.model = Doc2Vec.load(os.path.abspath(self.text_vec_model_path))
             print("Parrot started")
 
     def remove_stopwords(self,words):
@@ -32,8 +32,8 @@ class Doc2VecTool(object):
         from gensim.models.doc2vec import TaggedDocument
         tokenized = []
         for statement in statements:
-            if statement.id > 0:
-                tokenized.append(TaggedDocument(statement.search_text.split(' '),tags=[str(statement.id),statement.text]))
+            if statement.previous_id is None or statement.previous_id == '' or statement.previous_id == 0:
+                tokenized.append(TaggedDocument(statement.search_text.split(' '),tags=[str(statement.id)]))
         return tokenized
     
     def train_model(self, statements):
@@ -41,8 +41,9 @@ class Doc2VecTool(object):
 
         tokenized = self.build_tokenzied(statements)
 
-        self.model = Doc2Vec(tokenized,dm=1, window=8, min_count=5, workers=4)
-        self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=10)
+        self.model = Doc2Vec(tokenized,dm=1, window=8, min_count=1, workers=4)
+        self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=100)
+        self.save_model(self.text_vec_model_path)
     
     def save_model(self,save_path):
         import os

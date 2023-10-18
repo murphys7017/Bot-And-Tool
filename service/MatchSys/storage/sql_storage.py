@@ -111,6 +111,12 @@ class SQLStorageAdapter(StorageAdapter):
 
         query = session.query(Statement).filter_by(id=id).all()
         return query
+    def get_statements_by_previous_id(self, id):
+        Statement = self.get_model('statement')
+        session = self.Session()
+
+        query = session.query(Statement).filter_by(previous_id=id).all()
+        return query
 
     def filter(self, **kwargs):
         """

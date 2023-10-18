@@ -1,7 +1,5 @@
-from service.MatchSys.comparisons import LevenshteinDistance
-from service.MatchSys.logic import LogicAdapter
-from service.MatchSys import utils
-from random import choice
+from ..comparisons import LevenshteinDistance
+from .logic_adapter import LogicAdapter
 
 class BestMatch(LogicAdapter):
     """

@@ -87,19 +87,17 @@ class MatchSys(object):
 
         # 初始化消息处理器
         self.message_adapters = []
-        message_adapter_names = kwargs.get('message_adapter', ['.message.TextMessageAdapter'])
+        message_adapter_names = kwargs.get('message_adapter', ['service.MatchSys.message.TextMessageAdapter'])
         for message_adapter_name in message_adapter_names:
             validate_adapter_class(message_adapter_name, MessageAdapter)
             self.message_adapters.append( initialize_class(message_adapter_name, **kwargs))
 
         # 初始化数据存储
-        storage_adapter_name = kwargs.get('storage_adapter', '.storage.SQLStorageAdapter')
+        storage_adapter_name = kwargs.get('storage_adapter', 'service.MatchSys.storage.SQLStorageAdapter')
         validate_adapter_class(storage_adapter_name, StorageAdapter)
         self.storage = initialize_class(storage_adapter_name, **kwargs)
 
-        # 初始化匹配逻辑
-        search_names = kwargs.get('search_algorithms', ['.search.DocVectorSearch'])
-        self.search_handlers = []
+
         primary_search_algorithm = IndexedTextSearch(self, **kwargs)
         text_search_algorithm = TextSearch(self, **kwargs)
         vector_search_algorithm = DocVectorSearch(self, **kwargs)
@@ -170,21 +168,28 @@ class MatchSys(object):
                 message_adapter = messageadapter
         input_statement = message_adapter.process(message)
 
+    
         if input_statement is not None:
-      
-            additional_response_selection_parameters = kwargs.pop('additional_response_selection_parameters', {})
-            persist_values_to_response = kwargs.pop('persist_values_to_response', {})
-            # 生成响应Statement
-            response = self.generate_response(input_statement, additional_response_selection_parameters)
+            # 判断是否可以直接匹配到某些函数
+            for handle in self.command_handles:
+                if handle.check_power(input_statement) and handle.match(input_statement.text):
+                    response =  handle.handle(input_statement,self)
+                    self.history[0].next_id = response.id
+            
+            if response is None:
+                additional_response_selection_parameters = kwargs.pop('additional_response_selection_parameters', {})
+                persist_values_to_response = kwargs.pop('persist_values_to_response', {})
+                # 生成响应Statement
+                response = self.generate_response(input_statement, additional_response_selection_parameters)
 
 
-        # if not self.read_only:
-            # self.learn_response(input_statement)
+            # if not self.read_only:
+                # self.learn_response(input_statement)
 
-            # Save the response generated for the input
-            # self.storage.create(**response.serialize())
+                # Save the response generated for the input
+                # self.storage.create(**response.serialize())
 
-        return message_adapter.process_2_output(response)
+            return message_adapter.process_2_output(response)
     
     def generate_response(self, input_statement, additional_response_selection_parameters=None):
         """
@@ -208,12 +213,7 @@ class MatchSys(object):
         
         response_statement = None
 
-        # 判断是否可以直接匹配到某些函数
-        for handle in self.command_handles:
-            if handle.check_power(input_statement) and handle.match(input_statement.text):
-                response_statement =  handle.handle(input_statement,self)
-                self.history[0].next_id = response_statement.id
-                return response_statement
+        
         
         # 调用Search获取response
         Statement = self.storage.get_object('statement')
