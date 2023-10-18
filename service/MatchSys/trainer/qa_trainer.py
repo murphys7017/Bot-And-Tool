@@ -27,14 +27,20 @@ class QATrainer(Trainer):
         for messageadapter in self.matchsys.message_adapters:
             if messageadapter.check(list(conversation.keys())[0]):
                 message_adapter = messageadapter
-        input_statements = message_adapter.process_list(list(conversation.keys()),**kwargs)
+        input_statements = []
+        for index,key in enumerate(conversation.keys()):
+            print_progress_bar(
+                    'QA Trainer',
+                    index + 1, len(conversation)
+            )
+            input_statements.append(message_adapter.process(key,**kwargs))
+        # input_statements = message_adapter.process_list(list(conversation.keys()),**kwargs)
 
         for index,input_statement in enumerate(input_statements):
-                if self.show_training_progress:
-                    print_progress_bar(
-                        'QA Trainer',
-                        index + 1, len(conversation)
-                    )
+                print_progress_bar(
+                    'QA Trainer',
+                    index + 1, len(conversation)
+                )
                 statements_to_create.append(input_statement)
                 kwargs['previous_id'] = input_statement.id
                 kwargs['type_of'] = 'A'

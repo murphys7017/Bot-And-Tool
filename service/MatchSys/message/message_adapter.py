@@ -120,7 +120,8 @@ class MessageAdapter(object):
         for cws,srl in  zip(result.cws,result.srl):
             kwargs['id'] = self.snowflake.get_id()
 
-            kwargs['text'] = ''.join(cws)
+            kwargs['text'] = text_list[result.cws.index(cws)]
+            print( kwargs['text'])
 
             kwargs['search_text'] = ' '.join(cws)
             semantics = []
