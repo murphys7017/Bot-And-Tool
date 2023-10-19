@@ -5,12 +5,21 @@ class Doc2VecTool(object):
     model = None
     TaggedDocument = None
     def __init__(self, **kwargs):
+        """
+        vector_similarity_ratex 相似率大于这个值才会添加到返回集中
+        most_similar_number 一次匹配取多少个结果
+        vector_match_times 匹配几次
+        vector_similarity_rate_diff 相似率差别大于vector_similarity_rate_diff的才会添加到结果集
+        """
         import os
         from service import config
         from gensim.models import Doc2Vec
         from gensim.models.doc2vec import TaggedDocument
         
-        self.parrot_similarity_rate = kwargs.get('parrot_similarity_rate',config.parrot_similarity_rate)
+        self.vector_similarity_rate = kwargs.get('vector_similarity_rate',config.vector_similarity_rate)
+        self.most_similar_number = kwargs.get('most_similar_number',5)
+        self.vector_match_times = kwargs.get('vector_match_times',5)
+        self.vector_similarity_rate_diff = kwargs.get('vector_similarity_rate_diff', 0.1)
 
         self.text_vec_model_path = kwargs.get('text_vec_model_path', config.text_vec_model_path)
 
@@ -50,13 +59,17 @@ class Doc2VecTool(object):
         self.model.save(os.path.abspath(save_path))
         
     def inferred2string(self,words):
+        # TODO: 计划两种匹配模式 1.最相似的n项 2.相似率差别大于vector_similarity_rate_diff的
+        self.vector_similarity_rate_diff
+
         inferred_vector = self.model.infer_vector(doc_words=words)
-        
-        sims = self.model.dv.most_similar([inferred_vector],topn=20)
         res = []
-        for sim in sims:
-            if sim[1] >= self.parrot_similarity_rate:
-                res.append(sim[0])
+        for i in range(self.vector_match_times):
+            sims = self.model.dv.most_similar([inferred_vector],topn=self.most_similar_number)
+            
+            for sim in sims:
+                if sim[1] >= self.vector_similarity_rate:
+                    res.append(sim[0])
         return res
     
     def update_model(self,statements):

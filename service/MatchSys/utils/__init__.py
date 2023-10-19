@@ -101,7 +101,7 @@ def validate_adapter_class(validate_class, adapter_class):
         )
 
 
-def get_response_time(chatbot, statement='Hello'):
+def get_response_time(matchsys, statement='Hello'):
     """
     Returns the amount of time taken for a given
     chat bot to return a response.
@@ -116,7 +116,7 @@ def get_response_time(chatbot, statement='Hello'):
 
     start_time = time.time()
 
-    chatbot.get_response(statement)
+    matchsys.get_response(statement)
 
     return time.time() - start_time
 

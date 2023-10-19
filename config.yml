@@ -12,7 +12,7 @@ go_cqhttp_http: http://localhost:8882/
 go_cqhttp_websocket: ws://localhost:8883/
 if_start_rasa: False
 command_similarity_rate: 0.8
-parrot_similarity_rate: 0.92
+vector_similarity_rate: 0.92
 text_vec_model_path: 
 stop_words_path: 
 

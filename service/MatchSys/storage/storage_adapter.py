@@ -1,7 +1,8 @@
+from ..adapters import Adapter
 from ..tagging import ChineseTagger
 
 
-class StorageAdapter(object):
+class StorageAdapter(Adapter):
     """
     This is an abstract class that represents the interface
     that all storage adapters should implement.
@@ -162,9 +163,4 @@ class StorageAdapter(object):
             default = 'The database currently contains no entries. At least one entry is expected. You may need to train your chat bot to populate your database.'
             super().__init__(message or default)
 
-    class AdapterMethodNotImplementedError(NotImplementedError):
-        """
-        An exception to be raised when a storage adapter method has not been implemented.
-        Typically this indicates that the method should be implement in a subclass.
-        """
-        pass
+

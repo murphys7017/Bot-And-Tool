@@ -31,8 +31,8 @@ class LogicAdapter(Adapter):
     :type default_response: str or list or tuple
     """
 
-    def __init__(self, chatbot, **kwargs):
-        super().__init__(chatbot, **kwargs)
+    def __init__(self, matchsys, **kwargs):
+        super().__init__(matchsys, **kwargs)
         from service.MatchSys.utils import get_first_response
 
         self.search_algorithm_name = kwargs.get(
@@ -40,7 +40,7 @@ class LogicAdapter(Adapter):
             DocVectorSearch.name
         )
 
-        self.search_algorithm = self.chatbot.search_algorithms[
+        self.search_algorithm = self.matchsys.search_algorithms[
             self.search_algorithm_name
         ]
         self.min_confidence = kwargs.get('min_confidence',0.95)

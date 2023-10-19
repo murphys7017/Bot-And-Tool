@@ -10,10 +10,10 @@ class TextSearch:
 
     name = 'text_search'
 
-    def __init__(self, chatbot, **kwargs):
+    def __init__(self, matchsys, **kwargs):
         from service.MatchSys.comparisons import LevenshteinDistance
 
-        self.chatbot = chatbot
+        self.matchsys = matchsys
 
         statement_comparison_function = kwargs.get(
             'statement_comparison_function',
@@ -39,7 +39,7 @@ class TextSearch:
 
         :rtype: Generator yielding one closest matching statement at a time.
         """
-        self.chatbot.logger.info('Beginning search for close text match')
+        self.matchsys.logger.info('Beginning search for close text match')
 
         search_parameters = {
             'persona_not_startswith': 'bot:',
@@ -49,11 +49,11 @@ class TextSearch:
         if additional_parameters:
             search_parameters.update(additional_parameters)
 
-        statement_list = self.chatbot.storage.filter(**search_parameters)
+        statement_list = self.matchsys.storage.filter(**search_parameters)
 
         best_confidence_so_far = 0
 
-        self.chatbot.logger.info('Processing search results')
+        self.matchsys.logger.info('Processing search results')
 
         # Find the closest matching known statement
         for statement in statement_list:
@@ -63,7 +63,7 @@ class TextSearch:
                 best_confidence_so_far = confidence
                 statement.confidence = confidence
 
-                self.chatbot.logger.info('Similar text found: {} {}'.format(
+                self.matchsys.logger.info('Similar text found: {} {}'.format(
                     statement.text, confidence
                 ))
 

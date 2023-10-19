@@ -17,8 +17,8 @@ class BestMatch(LogicAdapter):
     :type excluded_words: list
     """
 
-    def __init__(self, chatbot, **kwargs):
-        super().__init__(chatbot, **kwargs)
+    def __init__(self, matchsys, **kwargs):
+        super().__init__(matchsys, **kwargs)
         self.statement_comparison_function = kwargs.get(
             'statement_comparison_function',
             LevenshteinDistance
@@ -31,7 +31,7 @@ class BestMatch(LogicAdapter):
             return self.statement_comparison_function(statement, input_statement)
         if statement.type_of == 'CHAT':
             similarity_rate = 0
-            for db_statement, history_statement in zip(statement.history_statements, self.chatbot.history):
+            for db_statement, history_statement in zip(statement.history_statements, self.matchsys.history):
                 similarity_rate += self.statement_comparison_function(db_statement, history_statement)
             return similarity_rate
         return -1
@@ -45,6 +45,8 @@ class BestMatch(LogicAdapter):
         for result in search_results:
             if self.compare_history(result,input_statement) >= self.min_confidence:
                 response_list.append(result)
+
+        print(response_list)
         if len(response_list)>0:
             response = response_list[0]
 
@@ -53,5 +55,5 @@ class BestMatch(LogicAdapter):
                     response = result
 
             return response
-
+        
         return input_statement

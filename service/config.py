@@ -60,7 +60,7 @@ def initialize():
 
     global if_start_rasa
     global command_similarity_rate
-    global parrot_similarity_rate
+    global vector_similarity_rate
     global text_vec_model_path
     global STOP_WORDS_PATH
 
@@ -101,7 +101,7 @@ def initialize():
 
         if_start_rasa = data['if_start_rasa']
         command_similarity_rate = data['command_similarity_rate']
-        parrot_similarity_rate = data['parrot_similarity_rate']
+        vector_similarity_rate = data['vector_similarity_rate']
 
         text_vec_model_path = data['text_vec_model_path']
 

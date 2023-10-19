@@ -21,7 +21,6 @@ class QATrainer(Trainer):
         next_id = 0
         kwargs['type_of'] = 'Q'
         kwargs['persona'] = 'user:*'
-
          # 匹配一个合适的消息处理器,请务必区分清每个处理器的判断规则，负责只会使用最后一个符合的
         message_adapter = None
         for messageadapter in self.matchsys.message_adapters:
@@ -45,7 +44,10 @@ class QATrainer(Trainer):
                 kwargs['previous_id'] = input_statement.id
                 kwargs['type_of'] = 'A'
                 kwargs['persona'] = 'bot:'+self.matchsys.name
-                for statement in  message_adapter.process_list(conversation[input_statement.text],**kwargs):
-                    statements_to_create.append(statement)
+                if input_statement.text in conversation:
+                    for statement in  message_adapter.process_list(conversation[input_statement.text],**kwargs):
+                        statements_to_create.append(statement)
+                else:
+                    print(input_statement)
         self.matchsys.storage.create_many(statements_to_create)
         self.matchsys.docvector_tool.train(statements_to_create)

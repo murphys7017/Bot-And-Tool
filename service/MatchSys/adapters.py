@@ -5,8 +5,8 @@ class Adapter(object):
     :param chatbot: A ChatBot instance.
     """
 
-    def __init__(self, chatbot, **kwargs):
-        self.chatbot = chatbot
+    def __init__(self,matchsys, **kwargs):
+        self.matchsys = matchsys
 
     class AdapterMethodNotImplementedError(NotImplementedError):
         """

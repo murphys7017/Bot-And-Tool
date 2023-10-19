@@ -28,18 +28,6 @@ class MessageAdapter(object):
         user_dictionary = kwargs.get('user_dictionary',[])
         if len(user_dictionary) > 0:
             self.ltp.add_words(words=user_dictionary, freq=2)
-    class AdapterMethodNotImplementedError(NotImplementedError):
-        """
-        An exception to be raised when an adapter method has not been implemented.
-        Typically this indicates that the developer is expected to implement the
-        method in a subclass.
-        """
-
-        def __init__(self, message='This method must be overridden in a subclass method.'):
-            """
-            Set the message for the exception.
-            """
-            super().__init__(message)
 
     def check(self, message):
         """
@@ -53,10 +41,18 @@ class MessageAdapter(object):
         
         return True
     def process_2_output(self, statement):
+        import random
         """
         将statement转化为外部需要的形式
         """
-        return statement.text
+
+        if statement.type_of == 'Q':
+            print(statement)
+            return random.choice(statement.predict_statements)
+        # TODO: 对话型整体搜索都需要反馈修改
+        elif statement.type_of == 'CHAT':
+            print(statement)
+            return random.choice(statement.predict_statements)
 
     def process(self, message, **kwargs):
         """
@@ -121,7 +117,6 @@ class MessageAdapter(object):
             kwargs['id'] = self.snowflake.get_id()
 
             kwargs['text'] = text_list[result.cws.index(cws)]
-            print( kwargs['text'])
 
             kwargs['search_text'] = ' '.join(cws)
             semantics = []

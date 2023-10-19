@@ -20,7 +20,7 @@ class DocVectorSearch(AbstractSearch):
         # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement
         input_statement_list = []
         for input_statement_id in self.matchsys.docvector_tool.inferred2string(input_statement.search_text.split(' ')):
-            input_statement_list.append(self.matchsys.storage.get_statements_by_id(int(input_statement_id)))
+            input_statement_list.append(self.matchsys.storage.get_statement_by_id(int(input_statement_id)))
 
         self.matchsys.logger.info('Processing search results')
 
@@ -30,7 +30,7 @@ class DocVectorSearch(AbstractSearch):
         for statement in input_statement_list:
             
             if statement.type_of == 'Q':
-                result =  self.chatbot.storage.get_statements_by_previous_id(statement.id)
+                result =  self.matchsys.storage.get_statements_by_previous_id(statement.id)
                 statement.predict_statements = result
                 
             if statement.type_of == 'CHAT':
@@ -45,5 +45,5 @@ class DocVectorSearch(AbstractSearch):
                 statement.total_statements = result
             if statement.type_of == 'TASK':
                 pass
-
+        print(all_result)
         return all_result

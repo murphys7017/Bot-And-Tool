@@ -228,7 +228,6 @@ class MatchSys(object):
                 
                 result = adapter.process(input_statement)
                 result.persona='bot:' + self.name
-                results.append(result)
 
                 self.logger.info(
                     '{} selected "{}" as a response with a confidence of {}'.format(
@@ -239,8 +238,7 @@ class MatchSys(object):
                 self.logger.info(
                     'Not processing the statement using {}'.format(adapter.class_name)
                 )
-
-        return results
+        return result
     
     def lean_response(self,statement):
         pass

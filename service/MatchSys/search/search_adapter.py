@@ -1,4 +1,7 @@
-class AbstractSearch(object):
+from ..adapters import Adapter
+
+
+class AbstractSearch(Adapter):
     name = "Abstract Search"
     def __init__(self,matchsys,**kwargs):
         self.matchsys = matchsys

@@ -32,10 +32,10 @@ class ChatListTrainer(Trainer):
                     conversation_count + 1, len(conversations)
                 )
             previous_snowkey = None
-            snowkey = self.chatbot.snowkey.get_id()
-            next_snowkey = self.chatbot.snowkey.get_id()
+            snowkey = self.matchsys.snowkey.get_id()
+            next_snowkey = self.matchsys.snowkey.get_id()
             for text in conversation:
-                statement_search_text = self.chatbot.storage.tagger.get_text_index_string(text)
+                statement_search_text = self.matchsys.storage.tagger.get_text_index_string(text)
                 
                 statement = self.get_preprocessed_statement(
                     Statement(
@@ -51,9 +51,9 @@ class ChatListTrainer(Trainer):
                 )
                 previous_snowkey = snowkey
                 snowkey = next_snowkey
-                next_snowkey = self.chatbot.snowkey.get_id()
+                next_snowkey = self.matchsys.snowkey.get_id()
 
                 statements_to_create.append(statement)
         
-        self.chatbot.storage.create_many(statements_to_create)
-        self.chatbot.docvector_tool.train(statements_to_create)
+        self.matchsys.storage.create_many(statements_to_create)
+        self.matchsys.docvector_tool.train(statements_to_create)
