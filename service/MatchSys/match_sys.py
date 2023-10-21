@@ -22,7 +22,6 @@ class HandleFunction(object):
     def check_power(self,input_statement):
         return True
     def match(self,input_statement):
-        print(type(input_statement))
         for key in self.commands:
             # 匹配消息的开头
             if input_statement.text.startswith(key) or input_statement.text.endswith(key):
@@ -96,7 +95,7 @@ class MatchSys(object):
         for message_adapter_name in message_adapter_names:
             validate_adapter_class(message_adapter_name, MessageAdapter)
             message_adapter = initialize_class(message_adapter_name, **kwargs)
-            self.message_adapters[message_adapter.class_name()] = message_adapter
+            self.message_adapters[message_adapter.class_name] = message_adapter
 
         # 初始化数据存储
         storage_adapter_name = kwargs.get('storage_adapter', 'service.MatchSys.storage.SQLStorageAdapter')
@@ -169,7 +168,7 @@ class MatchSys(object):
         response = None
         message_adapter = None
         # 匹配一个合适的消息处理器,请务必区分清每个处理器的判断规则，负责只会使用最后一个符合的
-        for messageadapter in self.message_adapters:
+        for messageadapter in self.message_adapters.values():
             if messageadapter.check(message):
                 message_adapter = messageadapter
         input_statement = message_adapter.process(message)
@@ -240,7 +239,8 @@ class MatchSys(object):
             if adapter.can_process(input_statement):
                 
                 result = adapter.process(input_statement)
-                result.persona='bot:' + self.name
+                if result is not None:
+                    result.persona='bot:' + self.name
 
                 self.logger.info(
                     '{} selected "{}" as a response with a confidence of {}'.format(

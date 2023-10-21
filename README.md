@@ -39,6 +39,12 @@ trainer = QATrainer(ms)
 trainer.train(map)
 ~~~
 
+### message
+message的核心作用就是把接收到的消息转换成标准的statement形式，把statement输出成需要的形式
+
+### search
+search主要是找出和输入的statement相似的已经保存到数据库中的statement数据，核心是训练好的doc2vec模型，使用doc2vec获得相似的id
+
 ### logic
 此模块主要的作用就是对搜索的statement结果列表进行处理选择一个合适的statement返回
 可以在创建MatchSys时logic_adapter_name_list使用指定使用的逻辑处理器列表，默认使用`service.MatchSys.logic.BestMatch`，可以指定多个逻辑处理器
@@ -67,63 +73,19 @@ rasa # 3以上，可选
 
 
 
-### 例子
-
-**config.yml**
-
-~~~yml
-# 同bot名称
-assistant_id: Alice
-# 和风api的用户key
-he_feng_key: 4fd5b28a9a27428e92dd14cada996806
-go_cqhttp_http: http://localhost:8882/
-go_cqhttp_websocket: ws://localhost:8883/
-~~~
-
-**main.py**
-
-~~~python
-from dispatcher import Dispatcher
-
-dispatcher = Dispatcher()
-
-@dispatcher.QQMessageHandler('测试命令1','测试命令2',...)
-def self_handle(message_info):
-    # 自己的处理逻辑
-    return '测试命令的响应'
-
-
-dispatcher.startServer()
-~~~
-
-
-
-# Parrot
-
-引入了chatterbot，不过是私人魔改版，大抵是不好使的，
-
-## 目前因为群友聊天太混乱了，还在思考该怎么设计合理一些
-
-parrot是一个根据群友的历史聊天记录进行回复的脚本。
-
-首先明确一下这并不是一个文本生成功能它只是记录群友的发言然后出发时根据相似度来选择合适文本回复的一个功能。
-
-parrot整体原理很简单，将对话数据整理成一个list 然后根据这个list构建一个向量模型，用户输入一句话，找出最相似的list元素的index索引，然后再获取对应的回复
-
-有点难顶，感觉匹配的不算是特别准，先暂时不考虑这个功能了。
-
-
 
 
 
 # 计划
 
+- [ ] 添加短对话训练器
+- [ ] 添加根据意图匹配，提升匹配精度
+- [ ] 添加从对话中学习
 - [x] 添加天气
 - [x] 添加色图
 - [ ] 将随机老婆迁移到这里
 - [ ] 扩大数据集重新训练
 - [x] 继续优化代码结构添加对群消息和私聊消息之外的其他类型的支持
 - [x] 优化配置文件，还有一部分可以添加到配置文件中
-- [ ] 整合优化chatterbot
-- [x] 添加随机老婆功能
+- [ ] 添加随机老婆功能
 
