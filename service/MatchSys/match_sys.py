@@ -1,3 +1,6 @@
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='TRUE'
+
 import logging
 from .object_definition import Statement
 from .message import MessageAdapter
