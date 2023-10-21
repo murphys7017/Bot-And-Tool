@@ -149,11 +149,16 @@ class MatchSys(object):
             return fn
         return decorate 
 
-    
+    def get_message_adapter(self, message):
+        for messageadapter in self.message_adapters.values():
+            if messageadapter.check(message):
+                return messageadapter
+        return self.message_adapters['TextMessageAdapter']
     def get_response(self, message=None, **kwargs):
+        
         """
         Return the bot's response based on the input.
-        TODO:根据输入的statement生成一个response,这一步进行一些数据验证或者对话学习等，对话匹配流程开始之前和结束后的一些工作
+        根据输入的statement生成一个response,这一步进行一些数据验证或者对话学习等，对话匹配流程开始之前和结束后的一些工作
 
         :param statement: An statement object or string.
         :returns: A response to the input.
@@ -169,11 +174,8 @@ class MatchSys(object):
         
         input_statement = None
         response = None
-        message_adapter = None
-        # 匹配一个合适的消息处理器,请务必区分清每个处理器的判断规则，负责只会使用最后一个符合的
-        for messageadapter in self.message_adapters.values():
-            if messageadapter.check(message):
-                message_adapter = messageadapter
+        # 匹配一个合适的消息处理器,请务必区分清每个处理器的判断规则，只会使用最后一个符合的
+        message_adapter = self.get_message_adapter(message)
         input_statement = message_adapter.process(message)
     
         if input_statement is not None:
@@ -257,4 +259,8 @@ class MatchSys(object):
         return result
     
     def lean_response(self,statement):
+        """排除QA型对话和Task型对话，主要学习Chat型对话，具体的触发lean_response函数的规则还没想好
+        Args:
+            statement (_type_): _description_
+        """
         pass

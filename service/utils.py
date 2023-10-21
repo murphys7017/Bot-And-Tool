@@ -4,10 +4,8 @@ import random
 from bs4 import BeautifulSoup
 
 from service import config
-from service.cq_code_builder import CqCodeBuilder
 config.init()
 
-cqCodeBuilder = CqCodeBuilder()
 
 
 
@@ -37,7 +35,4 @@ def get_ghs_picture(tags=[]):
                         'tag': tags
                 }
         response = requests.get('https://api.lolicon.app/setu/v2', params=params).json()['data'][0]['urls']['original']
-        return cqCodeBuilder.imageDoCache(response,cache_path='ghs')
-    else:
-        local_path = os.path.join(os.path.join(cqCodeBuilder.TEMP_FILE_DIR,'ghs'))
-        return cqCodeBuilder.image(os.path.join(local_path, random.sample(os.listdir(local_path),1)[0]))
+        return response

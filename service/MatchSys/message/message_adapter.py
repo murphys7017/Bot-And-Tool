@@ -83,12 +83,20 @@ class MessageAdapter(object):
         for preprocessor in self.preprocessors:
             text = preprocessor(text)
         
+        text = text.split('.{')
+        if len(text) > 1:
+            args = text[1][:-1].split(',')
+            for arg in args:
+                arg = arg.split('=')
+                if len(arg) == 2:
+                    kwargs[arg[0]] = arg[1]
+     
         kwargs['id'] = self.snowflake.get_id()
 
-        kwargs['text'] = text
+        kwargs['text'] = text[0]
         # 分词
-        result = self.ltp.pipeline(text, tasks=["cws","srl"])
-        # TODO: 重新编写
+        result = self.ltp.pipeline(text[0], tasks=["cws","srl"])
+
         kwargs['search_text'] = ' '.join(result.cws)
         if len(result.srl) > 0:
             t = result.srl[0]
@@ -109,27 +117,41 @@ class MessageAdapter(object):
         Returns:
             _type_: Statement
         """
-        # 清理文本
-        # for preprocessor in self.preprocessors:
-        #     text = preprocessor(text)
+        kwargs_list = []
+        input_texts = []
+        for text in text_list:
+            for preprocessor in self.preprocessors:
+                text = preprocessor(text)
+            text = text.split('.{')
+            if len(text) > 1:
+                temp = kwargs
+                args = text[1][:-1].split(',')
+                for arg in args:
+                    arg = arg.split('=')
+                    if len(arg) == 2:
+                        temp[arg[0]] = arg[1]
+            input_texts.append(text[0])
+            kwargs_list.append(temp)
+        
         input_statements = []
-        result = self.ltp.pipeline(text_list, tasks=["cws","srl"])
-        for cws,srl in  zip(result.cws,result.srl):
-            kwargs['id'] = self.snowflake.get_id()
+        results = self.ltp.pipeline(input_texts, tasks=["cws","srl"])
 
-            kwargs['text'] = text_list[result.cws.index(cws)]
+        for cws,srl,input_text,kwargs_ in  zip(results.cws,results.srl,input_texts,kwargs_list):
+            kwargs_['id'] = self.snowflake.get_id()
 
-            kwargs['search_text'] = ' '.join(cws)
+            kwargs_['text'] = input_text
+
+            kwargs_['search_text'] = ' '.join(cws)
+
             semantics = []
-            # TODO: 重新编写
             if len(srl) > 0:
                 t = srl[0]
                 for item in srl:
                     item['arguments'].append(('id',self.snowflake.get_id()))
                     semantics.append(Semantic(item)) 
-            kwargs['semantics'] = semantics
+            kwargs_['semantics'] = semantics
     
-            input_statements.append(Statement(**kwargs))
+            input_statements.append(Statement(**kwargs_))
         return input_statements
         
 

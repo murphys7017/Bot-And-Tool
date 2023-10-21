@@ -35,7 +35,6 @@ class Trainer(object):
         raise self.TrainerInitializationException()
     def save(self, *args, **kwargs):
         pass
-
     class TrainerInitializationException(Exception):
         """
         Exception raised when a base class has not overridden
