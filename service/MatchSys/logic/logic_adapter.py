@@ -50,18 +50,10 @@ class LogicAdapter(Adapter):
             'response_selection_method',
             get_first_response
         )
+    def default_responses_process(self, input_statement):
+        raise self.AdapterMethodNotImplementedError() 
 
-        default_responses = kwargs.get('default_response', [])
-
-        # Convert a single string into a list
-        if isinstance(default_responses, str):
-            default_responses = [
-                default_responses
-            ]
-
-        self.default_responses = [
-            Statement(text=default) for default in default_responses
-        ]
+        
 
     def can_process(self, statement):
         """

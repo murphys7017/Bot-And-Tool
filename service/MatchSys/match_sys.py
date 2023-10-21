@@ -21,27 +21,32 @@ class HandleFunction(object):
         self.func = func
     def check_power(self,input_statement):
         return True
-    def match(self,message):
+    def match(self,input_statement):
+        print(type(input_statement))
         for key in self.commands:
             # 匹配消息的开头
-            if str(message).startswith(key):
+            if input_statement.text.startswith(key) or input_statement.text.endswith(key):
                 return True
             
             # 匹配相似度 计划废弃
-            elif difflib.SequenceMatcher(lambda x:x in " \t", str(message), key).quick_ratio() > self.command_similarity_rate:
+            elif difflib.SequenceMatcher(lambda x:x in " \t", str(input_statement.text), key).quick_ratio() > self.command_similarity_rate:
                 return True
                     
             # 匹配关键词 计划废弃
-            # elif ',' in key:
-            #     keys = key.split(',')
-            #     if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
-            #         return True
-            # elif '，' in key:
-            #     keys = key.split(',')
-            #     if len(set(keys[:-1]).intersection(set(jieba.lcut(message)))) > keys[-1:]:
-            #         return True
+            elif ',' in key:
+                keys = key.split(',')
+                if len(set(keys[:-1]).intersection(input_statement.search_text.split(' '))) > keys[-1:]:
+                    return True
+            elif '，' in key:
+                keys = key.split(',')
+                if len(set(keys[:-1]).intersection(input_statement.search_text.split(' '))) > keys[-1:]:
+                    return True
+        return False
     def handle(self, input_statement,matchsys):
-        res = self.func(input_statement)
+        try: 
+            res = self.func(input_statement)
+        except Exception as e:
+            res = str(e)
         if isinstance(res, str):
             response = matchsys.message_adapter.text_process(res)
             response.id = matchsys.snowflake.get_id(),
@@ -86,11 +91,12 @@ class MatchSys(object):
 
 
         # 初始化消息处理器
-        self.message_adapters = []
+        self.message_adapters = {}
         message_adapter_names = kwargs.get('message_adapter', ['service.MatchSys.message.TextMessageAdapter'])
         for message_adapter_name in message_adapter_names:
             validate_adapter_class(message_adapter_name, MessageAdapter)
-            self.message_adapters.append( initialize_class(message_adapter_name, **kwargs))
+            message_adapter = initialize_class(message_adapter_name, **kwargs)
+            self.message_adapters[message_adapter.class_name()] = message_adapter
 
         # 初始化数据存储
         storage_adapter_name = kwargs.get('storage_adapter', 'service.MatchSys.storage.SQLStorageAdapter')
@@ -167,12 +173,11 @@ class MatchSys(object):
             if messageadapter.check(message):
                 message_adapter = messageadapter
         input_statement = message_adapter.process(message)
-
     
         if input_statement is not None:
             # 判断是否可以直接匹配到某些函数
             for handle in self.command_handles:
-                if handle.check_power(input_statement) and handle.match(input_statement.text):
+                if handle.check_power(input_statement) and handle.match(input_statement):
                     response =  handle.handle(input_statement,self)
                     self.history[0].next_id = response.id
             
@@ -188,8 +193,16 @@ class MatchSys(object):
 
                 # Save the response generated for the input
                 # self.storage.create(**response.serialize())
-
-            return message_adapter.process_2_output(response)
+            if response is not None:
+                res_text = message_adapter.process_2_output(response)
+                if res_text.startswith('FUNCTION:'):
+                    function_name = res_text.split(':')[1]
+                    for handle in self.command_handles:
+                        if handle.function_id == function_name:
+                            response =  handle.handle(input_statement,self)
+                            self.history[0].next_id = response.id
+                            return message_adapter.process_2_output(response)
+                return res_text
     
     def generate_response(self, input_statement, additional_response_selection_parameters=None):
         """

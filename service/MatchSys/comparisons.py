@@ -37,8 +37,8 @@ class LevenshteinDistance(Comparator):
             return 0
 
         # Get the lowercase version of both strings
-        statement_a_text = str(statement_a.text.lower())
-        statement_b_text = str(statement_b.text.lower())
+        statement_a_text = str(statement_a.text)
+        statement_b_text = str(statement_b.text)
 
         similarity = SequenceMatcher(
             None,

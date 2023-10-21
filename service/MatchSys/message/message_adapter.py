@@ -45,14 +45,15 @@ class MessageAdapter(object):
         """
         将statement转化为外部需要的形式
         """
-
+        res = None
         if statement.type_of == 'Q':
-            print(statement)
-            return random.choice(statement.predict_statements)
+           
+            res = random.choice(statement.predict_statements)
         # TODO: 对话型整体搜索都需要反馈修改
         elif statement.type_of == 'CHAT':
-            print(statement)
-            return random.choice(statement.predict_statements)
+
+            res = statement.predict_statements[0]
+        return res.text
 
     def process(self, message, **kwargs):
         """
