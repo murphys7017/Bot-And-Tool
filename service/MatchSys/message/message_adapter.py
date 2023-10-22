@@ -13,7 +13,8 @@ class MessageAdapter(object):
         self.snowflake = IdWorker(1,1,1)
 
         # 初始化预处理程序
-        preprocessors = kwargs.get('preprocessors', ['jionlp.clean_text'])
+        # 建议自行实现，可能导致处理后的和预期的不符，如null '' 等
+        preprocessors = kwargs.get('preprocessors', [])
         self.preprocessors = []
         for preprocessor in preprocessors:
             self.preprocessors.append(import_module(preprocessor))
@@ -119,12 +120,14 @@ class MessageAdapter(object):
         """
         kwargs_list = []
         input_texts = []
+
         for text in text_list:
             for preprocessor in self.preprocessors:
                 text = preprocessor(text)
+
             text = text.split('.{')
+            temp = kwargs
             if len(text) > 1:
-                temp = kwargs
                 args = text[1][:-1].split(',')
                 for arg in args:
                     arg = arg.split('=')
@@ -132,8 +135,8 @@ class MessageAdapter(object):
                         temp[arg[0]] = arg[1]
             input_texts.append(text[0])
             kwargs_list.append(temp)
-        
         input_statements = []
+
         results = self.ltp.pipeline(input_texts, tasks=["cws","srl"])
 
         for cws,srl,input_text,kwargs_ in  zip(results.cws,results.srl,input_texts,kwargs_list):

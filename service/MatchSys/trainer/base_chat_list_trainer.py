@@ -1,6 +1,5 @@
 from .trainer import Trainer
 from ..object_definition import Statement
-from ..utils import print_progress_bar
 class ChatListTrainer(Trainer):
     """
     [[...][...][...]...]
@@ -48,8 +47,5 @@ class ChatListTrainer(Trainer):
             
                 statements_to_create.append(statement)
 
-
-            
-        
         self.matchsys.storage.create_many(statements_to_create)
         self.matchsys.docvector_tool.train(statements_to_create)

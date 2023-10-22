@@ -36,6 +36,7 @@ class Doc2VecTool(object):
             self.update_model(statements)
         else:
             self.train_model(statements)
+        self.save_model(self.text_vec_model_path)
 
     def build_tokenzied(self,statements):
         from gensim.models.doc2vec import TaggedDocument
@@ -52,7 +53,7 @@ class Doc2VecTool(object):
 
         self.model = Doc2Vec(tokenized,dm=1, window=8, min_count=1, workers=4)
         self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=100)
-        self.save_model(self.text_vec_model_path)
+        
     
     def save_model(self,save_path):
         import os
