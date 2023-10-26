@@ -1,11 +1,15 @@
-# The config recipe.
-# https://rasa.com/docs/rasa/model-configuration/
-recipe: default.v1
+bot_name: Alice
+max_time_between_conversation: 30
+ltp_model_path: D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\LtpModel
+message_adapters: [MatchSys.message.TextMessageAdapter]
+logic_adapters: [MatchSys.logic.BestMatch]
+learing_adapter: []
+storage_adapter: MatchSys.storage.SQLStorageAdapter
 
-# The assistant project unique identifier
-# This default value must be replaced with a unique assistant name within your deployment
-# 同bot名称
-assistant_id: Alice
+vector_simility_rate: 5
+
+
+
 # 和风api的用户key
 he_feng_key: 4fd5b28a9a27428e92dd14cada996806
 go_cqhttp_http: http://localhost:8882/
