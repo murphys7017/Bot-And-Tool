@@ -10,27 +10,11 @@ class DocVectorSearch(AbstractSearch):
         
         # 对话CHAT类型上下文长度 5 句，问答类型QA 只有多个回答，任务TASK类型追溯整个对话
         self.history_length = kwargs.get('history_length', 5)
-
-    def search(self, input_statement, **additional_parameters):
-        """
-        TODO:完事流程
-        先从数据库中找出相似的输入语句，在根据输入语句从数据库中查询出对应的对话，再根据相似度返回对话列表
-        """
-        self.matchsys.logger.info('Beginning search for doc_vector_search')
-        # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement
-        input_statement_list = []
-        for input_statement_id in self.matchsys.docvector_tool.inferred2string(input_statement.search_text.split(' ')):
-            statement = self.matchsys.storage.get_statement_by_id(int(input_statement_id))
-            statement = self.matchsys.storage.model_to_object(statement)
-            input_statement_list.append(statement)
-
-        self.matchsys.logger.info('Processing search results')
-
+    
+    def build_statement_chain(self, statements):
         all_result = []
 
-        # Find the closest matching known statement
-        for statement in input_statement_list:
-            
+        for statement in statements:
             if statement.type_of == 'Q':
                 results =  self.matchsys.storage.get_statements_by_previous_id(statement.id)
                 statement.predict_statements = []
@@ -51,4 +35,43 @@ class DocVectorSearch(AbstractSearch):
             if statement.type_of == 'TASK':
                 pass
             all_result.append(statement)
+        return all_result
+    
+    def search_by_docvector(self, input_statement):
+        """
+        TODO:完事流程
+        先从数据库中找出相似的输入语句，在根据输入语句从数据库中查询出对应的对话，再根据相似度返回对话列表
+        """
+        self.matchsys.logger.info('Beginning search for doc_vector_search')
+        # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement
+        input_statement_list = []
+        for input_statement_id in self.matchsys.docvector_tool.inferred2string(input_statement.search_text.split(' ')):
+            statement = self.matchsys.storage.get_statement_by_id(int(input_statement_id))
+            statement = self.matchsys.storage.model_to_object(statement)
+            input_statement_list.append(statement)
+
+        self.matchsys.logger.info('Processing search results')
+
+        return self.build_statement_chain(input_statement_list)
+
+    def search_by_text(self, input_statement, **kwargs):
+        self.matchsys.logger.info('Beginning search for text_search')
+        # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement
+        input_statement_list = []
+        for statement in self.matchsys.storage.get_statements_by_text(input_statement.text):
+            statement = self.matchsys.storage.model_to_object(statement)
+            input_statement_list.append(statement)
+
+        self.matchsys.logger.info('Processing search results')
+
+        return self.build_statement_chain(input_statement_list)
+    
+    def search_by_intent(self, input_statement, **kwargs):
+        pass
+
+    def search(self, input_statement, **additional_parameters):
+
+        all_result = self.search_by_text(input_statement, **additional_parameters)
+        all_result = all_result + self.search_by_docvector(input_statement, **additional_parameters)
+      
         return all_result

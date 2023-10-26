@@ -117,6 +117,21 @@ class SQLStorageAdapter(StorageAdapter):
 
         query = session.query(Statement).filter_by(previous_id=id).all()
         return query
+    def get_statements_by_text(self, text):
+        Statement = self.get_model('statement')
+        session = self.Session()
+
+        query = session.query(Statement).filter_by(text=text).all()
+        return query
+    # TODO: 思考匹配规则，semantic中没有statement id
+    def get_semantics_by_text(self, text):
+        Semantic = self.get_model('semantic')
+        session = self.Session()
+
+        query = session.query(Semantic).filter_by(predicate=text).all()
+        query_result = []
+        for sem in query:
+            pass
 
     def filter(self, **kwargs):
         """
