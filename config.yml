@@ -7,6 +7,10 @@ learing_adapter: []
 storage_adapter: MatchSys.storage.SQLStorageAdapter
 
 vector_simility_rate: 5
+vector_matches_times: 5
+most_similar_number: 5
+vector_simility_rate_diff: 0.1
+vector_model_path: D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\model.pkl
 
 
 

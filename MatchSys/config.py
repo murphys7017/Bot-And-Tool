@@ -11,6 +11,10 @@ def initialize(**kwargs):
     global LOGIC_ADAPTERS
     global LEARNING_ADAPTERS
     global VECTOR_SIMILARITY_RATE
+    global VECTOR_MMATCH_TIMES
+    global VECTOR_SIMILAR_NUMBER
+    global VECTOR_MODEL_PATH
+    global VECTOR_SIMILARITY_RATE_DIFF
 
     global data_path
     global parrot_model_path
@@ -46,6 +50,17 @@ def initialize(**kwargs):
     LOGIC_ADAPTERS = kwargs.get('logic_adapters',yml_config['logic_adapter'])
     LEARNING_ADAPTERS = kwargs.get('learing_adapters',yml_config['learing_adapter'])
     VECTOR_SIMILARITY_RATE = kwargs.get('vector_simility_rate',yml_config['vector_simility_rate'])
+    VECTOR_MMATCH_TIMES = kwargs.get('vector_matches_times',yml_config['vector_matches_times'])
+    VECTOR_MODEL_PATH = kwargs.get('vector_model_path',yml_config['vector_model_path'])
+    VECTOR_SIMILAR_NUMBER = kwargs.get('vector_similar_number',yml_config['vector_similar_number'])
+    VECTOR_SIMILARITY_RATE_DIFF = kwargs.get('vector_simility_rate_diff',yml_config['vector_simility_rate_diff'])
+
+    STATEMENT_TEXT_MAX_LENGTH = kwargs.get('STATEMENT_TEXT_MAX_LENGTH', yml_config['STATEMENT_TEXT_MAX_LENGTH'])
+    CONVERSATION_LABEL_MAX_LENGTH =  kwargs.get('CONVERSATION_LABEL_MAX_LENGTH', yml_config['CONVERSATION_LABEL_MAX_LENGTH'])
+    PERSONA_MAX_LENGTH =  kwargs.get('PERSONA_MAX_LENGTH', yml_config['PERSONA_MAX_LENGTH'])
+    TAG_NAME_MAX_LENGTH =  kwargs.get('TAG_NAME_MAX_LENGTH', yml_config['TAG_NAME_MAX_LENGTH'])
+    TAG_TYPE_MAX_LENGTH =  kwargs.get('TAG_TYPE_MAX_LENGTH', yml_config['TAG_TYPE_MAX_LENGTH'])
+    STOP_WORDS_PATH = kwargs.get('stop_words_path', yml_config['stop_words_path'])
 
     with open('./config.yml',encoding='utf-8') as file:
         data = yaml.load(file, Loader=yaml.FullLoader)
@@ -56,11 +71,3 @@ def initialize(**kwargs):
         vector_similarity_rate = data['vector_similarity_rate']
 
         text_vec_model_path = data['text_vec_model_path']
-
-        STATEMENT_TEXT_MAX_LENGTH = data['STATEMENT_TEXT_MAX_LENGTH']
-        CONVERSATION_LABEL_MAX_LENGTH = data['CONVERSATION_LABEL_MAX_LENGTH']
-        PERSONA_MAX_LENGTH = data['PERSONA_MAX_LENGTH']
-        TAG_NAME_MAX_LENGTH = data['TAG_NAME_MAX_LENGTH']
-        TAG_TYPE_MAX_LENGTH = data['TAG_NAME_MAX_LENGTH']
-
-        STOP_WORDS_PATH = data['stop_words_path']
