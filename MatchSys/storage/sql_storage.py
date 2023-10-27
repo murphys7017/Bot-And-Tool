@@ -51,24 +51,24 @@ class SQLStorageAdapter(StorageAdapter):
         """
         Return the statement model.
         """
-        from service.MatchSys.storage.model_definition import Statement
+        from MatchSys.storage.model_definition import Statement
         return Statement
 
     def get_tag_model(self):
         """
         Return the conversation model.
         """
-        from service.MatchSys.storage.model_definition import Tag
+        from MatchSys.storage.model_definition import Tag
         return Tag
     def get_semantic_model(self):
         """
         Return the conversation model.
         """
-        from service.MatchSys.storage.model_definition import Semantic
+        from MatchSys.storage.model_definition import Semantic
         return Semantic
 
     def model_to_object(self, statement):
-        from service.MatchSys.object_definition import Statement as StatementObject
+        from MatchSys.object_definition import Statement as StatementObject
 
         return StatementObject(**statement.serialize())
 
@@ -128,10 +128,8 @@ class SQLStorageAdapter(StorageAdapter):
         Semantic = self.get_model('semantic')
         session = self.Session()
 
-        query = session.query(Semantic).filter_by(predicate=text).all()
-        query_result = []
-        for sem in query:
-            pass
+        return session.query(Semantic).filter_by(predicate=text).all()
+        
 
     def filter(self, **kwargs):
         """
@@ -399,7 +397,7 @@ class SQLStorageAdapter(StorageAdapter):
         """
         Populate the database with the tables.
         """
-        from service.MatchSys.storage.model_definition import Base
+        from MatchSys.storage.model_definition import Base
         Base.metadata.create_all(self.engine)
 
     def _session_finish(self, session, statement_text=None):

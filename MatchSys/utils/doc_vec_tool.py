@@ -12,7 +12,7 @@ class Doc2VecTool(object):
         vector_similarity_rate_diff 相似率差别大于vector_similarity_rate_diff的才会添加到结果集
         """
         import os
-        from service import config
+        from MatchSys import config
         from gensim.models import Doc2Vec
         from gensim.models.doc2vec import TaggedDocument
         

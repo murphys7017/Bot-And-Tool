@@ -86,10 +86,6 @@ class MatchSys(object):
         storage_adapter_name = kwargs.get('storage_adapter', 'MatchSys.storage.SQLStorageAdapter')
         logic_adapter_name_list = kwargs.get('logic_adapters', ['MatchSys.logic.BestMatch'])
 
-
- 
-
-
         # 初始化消息处理器
         self.message_adapters = {}
         for message_adapter_name in message_adapter_names:

@@ -10,3 +10,28 @@ class AbstractSearch(Adapter):
     
     def search(self,input_statement, **additional_parameters):
         pass
+    def build_statement_chain(self, statements):
+        all_result = []
+
+        for statement in statements:
+            if statement.type_of == 'Q':
+                results =  self.matchsys.storage.get_statements_by_previous_id(statement.id)
+                statement.predict_statements = []
+                for result in results:
+                    result = self.matchsys.storage.model_to_object(result)
+                    statement.predict_statements.append(result)
+                
+            if statement.type_of == 'CHAT':
+                next_statement = statement
+                per_statement = statement
+                for i in range(self.history_length):
+                    per_statement = self.matchsys.storage.get_statement_by_id(per_statement.previous_id)
+                    per_statement = self.matchsys.storage.model_to_object(per_statement)
+                    next_statement = self.matchsys.storage.get_statement_by_id(next_statement.next_id)
+                    next_statement = self.matchsys.storage.model_to_object(next_statement)
+                    statement.history_statements.append(per_statement)
+                    statement.predict_statements.append(next_statement)
+            if statement.type_of == 'TASK':
+                pass
+            all_result.append(statement)
+        return all_result

@@ -11,7 +11,7 @@ class IndexedTextSearch:
     name = 'indexed_text_search'
 
     def __init__(self, matchsys, **kwargs):
-        from service.MatchSys.comparisons import LevenshteinDistance
+        from MatchSys.comparisons import LevenshteinDistance
 
         self.matchsys = matchsys
 
