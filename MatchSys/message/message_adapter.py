@@ -8,7 +8,7 @@ class MessageAdapter(object):
     that all message adapters should implement.
     """
     def __init__(self, **kwargs) -> None:
-        from service.MatchSys.object_definition import Statement,Semantic
+        from MatchSys.object_definition import Statement,Semantic
 
         self.snowflake = IdWorker(1,1,1)
 

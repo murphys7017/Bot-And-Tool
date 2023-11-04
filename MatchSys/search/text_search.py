@@ -1,7 +1,7 @@
-from .search_adapter import AbstractSearch
+from .search_adapter import SearchAdapter
 
 
-class TextSearch(AbstractSearch):
+class TextSearch(SearchAdapter):
     """
     """
 
@@ -10,7 +10,7 @@ class TextSearch(AbstractSearch):
     def __init__(self, matchsys, **kwargs):
         self.matchsys = matchsys
 
-    def search(self, input_statement, **additional_parameters):
+    def search(self, input_statement):
         self.matchsys.logger.info('Beginning search for text_search')
         # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement
         input_statement_list = []

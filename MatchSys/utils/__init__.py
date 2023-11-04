@@ -77,7 +77,8 @@ def validate_adapter_class(validate_class, adapter_class):
 
     :raises: Adapter.InvalidAdapterTypeException
     """
-    from service.MatchSys.adapters import Adapter
+    from MatchSys.adapters import Adapter
+
 
     # If a dictionary was passed in, check if it has an import_path attribute
     if isinstance(validate_class, dict):

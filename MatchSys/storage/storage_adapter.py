@@ -1,5 +1,4 @@
 from ..adapters import Adapter
-from ..tagging import ChineseTagger
 
 
 class StorageAdapter(Adapter):
@@ -15,7 +14,6 @@ class StorageAdapter(Adapter):
         :param str user_dict: 
         """
 
-        self.tagger = ChineseTagger(user_dict=kwargs.get('user_dict',None))
 
     def get_model(self, model_name):
         """
@@ -42,7 +40,7 @@ class StorageAdapter(Adapter):
         return get_model_method()
 
     def get_statement_object(self):
-        from service.MatchSys.object_definition import Statement
+        from MatchSys.object_definition import Statement
 
         StatementModel = self.get_model('statement')
 

@@ -136,7 +136,6 @@ class StatementMixin(object):
         'semantics',
         'conversation',
         'persona',
-        'tags',
         'previous_id',
         'next_id',
         'created_at',
@@ -153,18 +152,6 @@ class StatementMixin(object):
         Return the list of field names for the statement.
         """
         return self.statement_field_names + self.extra_statement_field_names
-
-    def get_tags(self):
-        """
-        Return the list of tags for this statement.
-        """
-        return self.tags
-
-    def add_tags(self, *tags):
-        """
-        Add a list of strings to the statement as tags.
-        """
-        self.tags.extend(tags)
 
     def serialize(self):
         """
@@ -200,7 +187,6 @@ class Statement(StatementMixin):
         'semantics',
         'conversation',
         'persona',
-        'tags',
         'previous_id',
         'next_id',
         'created_at',
@@ -222,7 +208,6 @@ class Statement(StatementMixin):
         self.search_text = kwargs.get('search_text', '')
         self.conversation = kwargs.get('conversation', '')
         self.persona = kwargs.get('persona', '')
-        self.tags = kwargs.pop('tags', [])
         self.next_id = kwargs.get('next_id', '')
         self.previous_id = kwargs.get('previous_id', '')
         self.created_at = kwargs.get('created_at', datetime.now())

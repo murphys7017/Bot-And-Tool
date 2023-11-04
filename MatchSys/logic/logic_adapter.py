@@ -33,16 +33,8 @@ class LogicAdapter(Adapter):
 
     def __init__(self, matchsys, **kwargs):
         super().__init__(matchsys, **kwargs)
-        from service.MatchSys.utils import get_first_response
+        from MatchSys.utils import get_first_response
 
-        self.search_algorithm_name = kwargs.get(
-            'search_algorithm_name',
-            DocVectorSearch.name
-        )
-
-        self.search_algorithm = self.matchsys.search_algorithms[
-            self.search_algorithm_name
-        ]
         self.min_confidence = kwargs.get('min_confidence',0.95)
 
         # By default, select the first available response
@@ -66,7 +58,7 @@ class LogicAdapter(Adapter):
         """
         return True
 
-    def process(self, statement, additional_response_selection_parameters=None):
+    def process(self, statement):
         """
         覆盖此方法并实现选择输入语句响应的逻辑。
         应该返回置信度值和所选的响应语句。

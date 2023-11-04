@@ -1,6 +1,9 @@
 import yaml
 
+
+
 def initialize(**kwargs):
+    print('Initializing')
     # bot名称 同时也是识别id
     global BOT_NAME
     # max_time_between_conversations 超过这个时常就判断为两个对话
@@ -29,8 +32,6 @@ def initialize(**kwargs):
     global STATEMENT_TEXT_MAX_LENGTH
     global CONVERSATION_LABEL_MAX_LENGTH
     global PERSONA_MAX_LENGTH
-    global TAG_NAME_MAX_LENGTH
-    global TAG_TYPE_MAX_LENGTH
 
     data_path = './data/'
     # './data/ParrotModel/'
@@ -41,25 +42,25 @@ def initialize(**kwargs):
     command_similarity_rate=0.8
     config_file = open('./config.yml', encoding='utf-8')
     yml_config = yaml.load(config_file, Loader=yaml.FullLoader)
+    print(yml_config)
 
     BOT_NAME = kwargs.get('bot_name', yml_config['bot_name'])
     MAX_TIME_BETWEEN_CONVERSATION = kwargs.get('max_time_between_conversation',yml_config['max_time_between_conversation'])
     LTP_MODEL_PATH = kwargs.get('ltp_model_path',yml_config['ltp_model_path'])
-    MESSAGE_ADAPTERS = kwargs.get('message_adapters',yml_config['message_adapter'])
+    MESSAGE_ADAPTERS = kwargs.get('message_adapters',yml_config['message_adapters'])
     STORAGE_ADAPTER = kwargs.get('storage_adapter',yml_config['storage_adapter'])
-    LOGIC_ADAPTERS = kwargs.get('logic_adapters',yml_config['logic_adapter'])
+    LOGIC_ADAPTERS = kwargs.get('logic_adapters',yml_config['logic_adapters'])
     LEARNING_ADAPTERS = kwargs.get('learing_adapters',yml_config['learing_adapter'])
+    
     VECTOR_SIMILARITY_RATE = kwargs.get('vector_simility_rate',yml_config['vector_simility_rate'])
     VECTOR_MMATCH_TIMES = kwargs.get('vector_matches_times',yml_config['vector_matches_times'])
-    VECTOR_MODEL_PATH = kwargs.get('vector_model_path',yml_config['vector_model_path'])
     VECTOR_SIMILAR_NUMBER = kwargs.get('vector_similar_number',yml_config['vector_similar_number'])
     VECTOR_SIMILARITY_RATE_DIFF = kwargs.get('vector_simility_rate_diff',yml_config['vector_simility_rate_diff'])
+    VECTOR_MODEL_PATH = kwargs.get('vector_model_path',yml_config['vector_model_path'])
 
     STATEMENT_TEXT_MAX_LENGTH = kwargs.get('STATEMENT_TEXT_MAX_LENGTH', yml_config['STATEMENT_TEXT_MAX_LENGTH'])
     CONVERSATION_LABEL_MAX_LENGTH =  kwargs.get('CONVERSATION_LABEL_MAX_LENGTH', yml_config['CONVERSATION_LABEL_MAX_LENGTH'])
     PERSONA_MAX_LENGTH =  kwargs.get('PERSONA_MAX_LENGTH', yml_config['PERSONA_MAX_LENGTH'])
-    TAG_NAME_MAX_LENGTH =  kwargs.get('TAG_NAME_MAX_LENGTH', yml_config['TAG_NAME_MAX_LENGTH'])
-    TAG_TYPE_MAX_LENGTH =  kwargs.get('TAG_TYPE_MAX_LENGTH', yml_config['TAG_TYPE_MAX_LENGTH'])
     STOP_WORDS_PATH = kwargs.get('stop_words_path', yml_config['stop_words_path'])
 
     with open('./config.yml',encoding='utf-8') as file:

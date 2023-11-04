@@ -16,12 +16,12 @@ class Doc2VecTool(object):
         from gensim.models import Doc2Vec
         from gensim.models.doc2vec import TaggedDocument
         
-        self.vector_similarity_rate = kwargs.get('vector_similarity_rate',config.vector_similarity_rate)
-        self.most_similar_number = kwargs.get('most_similar_number',5)
-        self.vector_match_times = kwargs.get('vector_match_times',5)
-        self.vector_similarity_rate_diff = kwargs.get('vector_similarity_rate_diff', 0.1)
+        self.vector_similarity_rate = kwargs.get('vector_similarity_rate',config.VECTOR_SIMILARITY_RATE)
+        self.most_similar_number = kwargs.get('most_similar_number',config.VECTOR_SIMILAR_NUMBER)
+        self.vector_match_times = kwargs.get('vector_match_times',config.VECTOR_MMATCH_TIMES)
+        self.vector_similarity_rate_diff = kwargs.get('vector_similarity_rate_diff', config.VECTOR_SIMILARITY_RATE_DIFF)
 
-        self.text_vec_model_path = kwargs.get('text_vec_model_path', config.text_vec_model_path)
+        self.text_vec_model_path = kwargs.get('text_vec_model_path', config.VECTOR_MODEL_PATH)
 
         if os.path.exists(self.text_vec_model_path):
             self.model = Doc2Vec.load(os.path.abspath(self.text_vec_model_path))

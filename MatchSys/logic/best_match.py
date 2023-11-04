@@ -23,6 +23,7 @@ class BestMatch(LogicAdapter):
             'statement_comparison_function',
             LevenshteinDistance()
         )
+
         self.frequency_match_statements = kwargs.get('frequency_match_statements', 1)
         self.min_confidence = kwargs.get('min_confidence',0.9)
         self.excluded_words = kwargs.get('excluded_words')
@@ -40,8 +41,9 @@ class BestMatch(LogicAdapter):
         return None
 
     def process(self, input_statement):
-        
-        search_results = self.search_algorithm.search(input_statement)
+        search_results = []
+        for search_adapter in  self.matchsys.search_adapters:
+            search_results = search_results + search_adapter.search(input_statement)
         response_list = []
         # Search for the closest match to the input statement
         for result in search_results:

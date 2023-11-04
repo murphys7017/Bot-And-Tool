@@ -6,11 +6,12 @@ from .object_definition import Statement
 from .message import MessageAdapter
 from .storage import StorageAdapter
 from .logic import LogicAdapter
-from .search import TextSearch, IndexedTextSearch, DocVectorSearch
+from .search import SearchAdapter
 from .utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module,IdWorker
 
 from ltp import LTP
 import difflib
+from MatchSys import config
 
 class HandleFunction(object):
     def __init__(self, func, **kwargs) -> None:
@@ -74,7 +75,9 @@ class MatchSys(object):
             preprocessors
             max_time_between_conversations
         """
-
+        print("Starting initialization of MatchSys")
+        config.initialize(**kwargs)
+        
         self.history = []
         self.predict_dialogue = []
         self.command_handles = []
@@ -84,6 +87,8 @@ class MatchSys(object):
         ltp_model_path = kwargs.get('ltp_model_path', 'LTP/small')
         message_adapter_names = kwargs.get('message_adapters', ['MatchSys.message.TextMessageAdapter'])
         storage_adapter_name = kwargs.get('storage_adapter', 'MatchSys.storage.SQLStorageAdapter')
+        # TODO:完善intent search
+        search_adapters_name_list = kwargs.get('search_adapters_name_list', ['MatchSys.search.DocVectorSearch','MatchSys.search.TextSearch'])
         logic_adapter_name_list = kwargs.get('logic_adapters', ['MatchSys.logic.BestMatch'])
 
         # 初始化消息处理器
@@ -97,15 +102,20 @@ class MatchSys(object):
         validate_adapter_class(storage_adapter_name, StorageAdapter)
         self.storage = initialize_class(storage_adapter_name, **kwargs)
 
+        self.search_adapters = []
+        for adapter in search_adapters_name_list:
+            validate_adapter_class(adapter, SearchAdapter)
+            search_adapter = initialize_class(adapter, self, **kwargs)
+            self.search_adapters.append(search_adapter)
 
-        primary_search_algorithm = IndexedTextSearch(self, **kwargs)
-        text_search_algorithm = TextSearch(self, **kwargs)
-        vector_search_algorithm = DocVectorSearch(self, **kwargs)
-        self.search_algorithms = {
-            primary_search_algorithm.name: primary_search_algorithm,
-            text_search_algorithm.name: text_search_algorithm,
-            vector_search_algorithm.name: vector_search_algorithm
-        }
+        # primary_search_algorithm = IndexedTextSearch(self, **kwargs)
+        # text_search_algorithm = TextSearch(self, **kwargs)
+        # vector_search_algorithm = DocVectorSearch(self, **kwargs)
+        # self.search_algorithms = {
+        #     primary_search_algorithm.name: primary_search_algorithm,
+        #     text_search_algorithm.name: text_search_algorithm,
+        #     vector_search_algorithm.name: vector_search_algorithm
+        # }
 
         # 初始化处理逻辑
         self.logic_adapters = []
@@ -140,6 +150,7 @@ class MatchSys(object):
             if messageadapter.check(message):
                 return messageadapter
         return self.message_adapters['TextMessageAdapter']
+    
     def get_response(self, message=None, **kwargs):
         
         """
@@ -172,10 +183,8 @@ class MatchSys(object):
                     self.history[0].next_id = response.id
             
             if response is None:
-                additional_response_selection_parameters = kwargs.pop('additional_response_selection_parameters', {})
-                persist_values_to_response = kwargs.pop('persist_values_to_response', {})
                 # 生成响应Statement
-                response = self.generate_response(input_statement, additional_response_selection_parameters)
+                response = self.generate_response(input_statement)
 
 
             # if not self.read_only:
@@ -194,7 +203,7 @@ class MatchSys(object):
                             return message_adapter.process_2_output(response)
                 return res_text
     
-    def generate_response(self, input_statement, additional_response_selection_parameters=None):
+    def generate_response(self, input_statement):
         """
         Return a response based on a given input statement.
 
@@ -213,17 +222,8 @@ class MatchSys(object):
             else:
                 input_statement.previous_id = self.history[0].id
                 self.history.insert(0,input_statement)
-        
-        response_statement = None
-
-        
-        
-        # 调用Search获取response
-        Statement = self.storage.get_object('statement')
-
-        results = []
+    
         result = None
-        max_confidence = -1
         # 获取所有的响应statement
         for adapter in self.logic_adapters:
             # 检查是否符合处理器要求
@@ -232,16 +232,10 @@ class MatchSys(object):
                 result = adapter.process(input_statement)
                 if result is not None:
                     result.persona='bot:' + self.name
-
-                self.logger.info(
-                    '{} selected "{}" as a response with a confidence of {}'.format(
-                        adapter.class_name, result.text, result.confidence
+                else:
+                    self.logger.info(
+                        'the input statement is null'
                     )
-                )
-            else:
-                self.logger.info(
-                    'Not processing the statement using {}'.format(adapter.class_name)
-                )
         return result
     
     def lean_response(self,statement):

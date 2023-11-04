@@ -5,7 +5,10 @@ from sqlalchemy.ext.declarative import declared_attr, declarative_base
 
 from ..object_definition import StatementMixin,SemanticBase
 # TODO: 修改config引入来源
-from service import config
+from MatchSys import config
+config.initialize(**{})
+
+print("Starting initialization of ModelBase")
 
 class ModelBase(object):
     """
@@ -28,40 +31,12 @@ class ModelBase(object):
 
 Base = declarative_base(cls=ModelBase)
 
-
-tag_association_table = Table(
-    'tag_association',
-    Base.metadata,
-    Column('tag_id', Integer, ForeignKey('tag.id')),
-    Column('statement_id', Integer, ForeignKey('statement.id'))
-)
-
 semantic_association_table = Table(
     'semantic_association',
     Base.metadata,
     Column('semantic_id', Integer, ForeignKey('semantic.id')),
     Column('statement_id', Integer, ForeignKey('statement.id'))
 )
-
-
-
-class Tag(Base):
-    """
-    A tag that describes a statement.
-    """
-
-    name = Column(
-        String(config.TAG_NAME_MAX_LENGTH),
-        unique=True
-    )
-
-    type_of = Column(
-        String(config.TAG_TYPE_MAX_LENGTH)
-    )
-
-    predicate = Column(
-        String(config.STATEMENT_TEXT_MAX_LENGTH)
-    )
 
 class Semantic(Base, SemanticBase):
     @declared_attr
@@ -213,11 +188,6 @@ class Statement(Base, StatementMixin):
         Integer
     )
 
-    tags = relationship(
-        'Tag',
-        secondary=lambda: tag_association_table,
-        backref='statements'
-    )
     semantics = relationship(
         'Semantic',
         secondary=lambda: semantic_association_table,
@@ -230,16 +200,3 @@ class Statement(Base, StatementMixin):
         server_default=''
     )
 
-    def get_tags(self):
-        """
-        Return a list of tags for this statement.
-        """
-        return [tag.name for tag in self.tags]
-
-    def add_tags(self, *tags):
-        """
-        Add a list of strings to the statement as tags.
-        """
-        self.tags.extend([
-            Tag(name=tag) for tag in tags
-        ])

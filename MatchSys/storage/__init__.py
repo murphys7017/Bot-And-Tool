@@ -1,6 +1,6 @@
 from .storage_adapter import StorageAdapter
 from .sql_storage import SQLStorageAdapter
-from .model_definition import Semantic,Statement,Tag
+from .model_definition import Semantic,Statement
 
 
 """
@@ -11,5 +11,4 @@ __all__ = (
     'SQLStorageAdapter',
     'Semantic',
     'Statement',
-    'Tag'
 )

@@ -26,7 +26,7 @@ class IndexedTextSearch:
             'search_page_size', 1000
         )
 
-    def search(self, input_statement, **additional_parameters):
+    def search(self, input_statement):
         """
         Search for close matches to the input. Confidence scores for
         subsequent results will order of increasing value.
@@ -48,18 +48,12 @@ class IndexedTextSearch:
                 'No value for search_text was available on the provided input'
             )
 
-            input_search_text = self.matchsys.storage.tagger.get_text_index_string(
-                input_statement.text
-            )
 
         search_parameters = {
             'search_text_contains': input_search_text,
             'persona_not_startswith': 'bot:',
             'page_size': self.search_page_size
         }
-
-        if additional_parameters:
-            search_parameters.update(additional_parameters)
 
         statement_list = self.matchsys.storage.filter(**search_parameters)
 

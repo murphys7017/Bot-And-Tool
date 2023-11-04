@@ -1,10 +1,9 @@
 import sys
 sys.path.append(r"C:\Users\Administrator\Documents\GitHub\QQ-Bot-And-Tool") 
-from service import config
-config.initialize()
+from MatchSys import config
 
 
-from service.MatchSys import MatchSys
+from MatchSys import MatchSys
 ms = MatchSys(
         name='teat_sys',
         ltp_model_path=r'C:\Users\Administrator\Documents\GitHub\QQ-Bot-And-Tool\data\LtpModel',

@@ -8,16 +8,19 @@ storage_adapter: MatchSys.storage.SQLStorageAdapter
 
 vector_simility_rate: 5
 vector_matches_times: 5
-most_similar_number: 5
+vector_similar_number: 5
 vector_simility_rate_diff: 0.1
 vector_model_path: D:\Code\MyLongTimeProject\A\QQ-Bot-And-Tool\data\model.pkl
 
+# BestMatch default settings
+frequency_match_statements: 1
+min_confidence: 0.9
+excluded_words: 
 
 
 # 和风api的用户key
 he_feng_key: 4fd5b28a9a27428e92dd14cada996806
-go_cqhttp_http: http://localhost:8882/
-go_cqhttp_websocket: ws://localhost:8883/
+
 if_start_rasa: False
 command_similarity_rate: 0.8
 vector_similarity_rate: 0.92
@@ -32,56 +35,3 @@ CONVERSATION_LABEL_MAX_LENGTH: 32
 
 # The maximum length of text that can be stored in the persona field of the statement model.
 PERSONA_MAX_LENGTH: 50
-
-# The maximum length of characters that the name of a tag can contain
-TAG_NAME_MAX_LENGTH: 50
-# Configuration for Rasa NLU.
-# https://rasa.com/docs/rasa/nlu/components/
-
-language: zh
-
-pipeline:
-# # No configuration for the NLU pipeline was provided. The following default pipeline was used to train your model.
-# # If you'd like to customize it, uncomment and adjust the pipeline.
-# # See https://rasa.com/docs/rasa/tuning-your-model for more information.
-   - name: "JiebaTokenizer"
-   - name: RegexFeaturizer
-     use_word_boundaries: False
-     use_lookup_tables: True
-     use_regexes: True
-   - name: LexicalSyntacticFeaturizer
-   - name: CountVectorsFeaturizer
-   - name: CountVectorsFeaturizer
-     analyzer: char_wb
-     min_ngram: 1
-     max_ngram: 4
-   - name: DIETClassifier
-     epochs: 100
-   - name: EntitySynonymMapper
-   - name: ResponseSelector
-     epochs: 100
-
-   - name: FallbackClassifier
-     threshold: 0.6
-     ambiguity_threshold: 0.2
-
-
-# Configuration for Rasa Core.
-# https://rasa.com/docs/rasa/core/policies/
-policies:
-# # No configuration for policies was provided. The following default policies were used to train your model.
-# # If you'd like to customize them, uncomment and adjust the policies.
-# # See https://rasa.com/docs/rasa/policies for more information.
-  - name: MemoizationPolicy
-  - name: TEDPolicy
-    max_history: 8
-    epochs: 100
-    constrain_similarities: true
-  - name: RulePolicy
-  # # Confidence threshold for the `core_fallback_action_name` to apply.
-  # # The action will apply if no other action was predicted with
-  # # a confidence >= core_fallback_threshold
-  #   core_fallback_threshold: 0.4
-  #   core_fallback_action_name: "action_fallback"
-  #   enable_fallback_prediction: True
-

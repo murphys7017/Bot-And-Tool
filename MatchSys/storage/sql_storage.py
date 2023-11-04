@@ -54,12 +54,6 @@ class SQLStorageAdapter(StorageAdapter):
         from MatchSys.storage.model_definition import Statement
         return Statement
 
-    def get_tag_model(self):
-        """
-        Return the conversation model.
-        """
-        from MatchSys.storage.model_definition import Tag
-        return Tag
     def get_semantic_model(self):
         """
         Return the conversation model.
@@ -142,31 +136,21 @@ class SQLStorageAdapter(StorageAdapter):
         from sqlalchemy import or_
 
         Statement = self.get_model('statement')
-        Tag = self.get_model('tag')
+
 
         session = self.Session()
 
         page_size = kwargs.pop('page_size', 1000)
         order_by = kwargs.pop('order_by', None)
-        tags = kwargs.pop('tags', [])
         exclude_text = kwargs.pop('exclude_text', None)
         exclude_text_words = kwargs.pop('exclude_text_words', [])
         persona_not_startswith = kwargs.pop('persona_not_startswith', None)
         search_text_contains = kwargs.pop('search_text_contains', None)
 
-        # Convert a single sting into a list if only one tag is provided
-        if type(tags) == str:
-            tags = [tags]
-
         if len(kwargs) == 0:
             statements = session.query(Statement).filter()
         else:
             statements = session.query(Statement).filter_by(**kwargs)
-
-        if tags:
-            statements = statements.join(Statement.tags).filter(
-                Tag.name.in_(tags)
-            )
 
         if exclude_text:
             statements = statements.filter(
@@ -216,11 +200,9 @@ class SQLStorageAdapter(StorageAdapter):
         Returns the created statement.
         """
         Statement = self.get_model('statement')
-        Tag = self.get_model('tag')
 
         session = self.Session()
 
-        tags = set(kwargs.pop('tags', []))
 
         # if 'search_text' not in kwargs:
         #     kwargs['search_text'] = self.tagger.get_text_index_string(kwargs['text'])
@@ -231,15 +213,6 @@ class SQLStorageAdapter(StorageAdapter):
         #         kwargs['search_in_response_to'] = self.tagger.get_text_index_string(in_response_to)
 
         statement = Statement(**kwargs)
-
-        for tag_name in tags:
-            tag = session.query(Tag).filter_by(name=tag_name).first()
-
-            if not tag:
-                # Create the tag
-                tag = Tag(name=tag_name)
-
-            statement.tags.append(tag)
 
         session.add(statement)
 
@@ -258,42 +231,19 @@ class SQLStorageAdapter(StorageAdapter):
         Creates multiple statement entries.
         """
         Statement = self.get_model('statement')
-        Tag = self.get_model('tag')
         Semantic = self.get_model('semantic')
 
         session = self.Session()
 
         create_statements = []
-        create_tags = {}
+
 
         for statement in statements:
 
             statement_data = statement.serialize()
-            tag_data = statement_data.pop('tags', [])
             semantics_data = statement_data.pop('semantics',[])
 
             statement_model_object = Statement(**statement_data)
-
-            new_tags = set(tag_data) - set(create_tags.keys())
-
-            if new_tags:
-                existing_tags = session.query(Tag).filter(
-                    Tag.name.in_(new_tags)
-                )
-
-                for existing_tag in existing_tags:
-                    create_tags[existing_tag.name] = existing_tag
-
-            for tag_name in tag_data:
-                if tag_name in create_tags:
-                    tag = create_tags[tag_name]
-                else:
-                    # Create the tag if it does not exist
-                    tag = Tag(name=tag_name)
-
-                    create_tags[tag_name] = tag
-
-                statement_model_object.tags.append(tag)
             
 
             semantics = []
@@ -313,7 +263,6 @@ class SQLStorageAdapter(StorageAdapter):
         Creates an entry if one does not exist.
         """
         Statement = self.get_model('statement')
-        Tag = self.get_model('tag')
 
         if statement is not None:
             session = self.Session()
@@ -340,19 +289,10 @@ class SQLStorageAdapter(StorageAdapter):
 
             record.created_at = statement.created_at
 
-            record.search_text = self.tagger.get_text_index_string(statement.text)
 
             # if statement.in_response_to:
             #     record.search_in_response_to = self.tagger.get_text_index_string(statement.in_response_to)
 
-            for tag_name in statement.get_tags():
-                tag = session.query(Tag).filter_by(name=tag_name).first()
-
-                if not tag:
-                    # Create the record
-                    tag = Tag(name=tag_name)
-
-                record.tags.append(tag)
 
             session.add(record)
 
@@ -383,12 +323,10 @@ class SQLStorageAdapter(StorageAdapter):
         Drop the database.
         """
         Statement = self.get_model('statement')
-        Tag = self.get_model('tag')
 
         session = self.Session()
 
         session.query(Statement).delete()
-        session.query(Tag).delete()
 
         session.commit()
         session.close()

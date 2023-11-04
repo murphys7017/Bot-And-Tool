@@ -1,10 +1,9 @@
-from .search_adapter import AbstractSearch
+from .search_adapter import SearchAdapter
 
-class DocVectorSearch(AbstractSearch):
+class DocVectorSearch(SearchAdapter):
     name = 'doc_vector_search'
 
     def __init__(self, matchsys, **kwargs):
-        from MatchSys.comparisons import LevenshteinDistance
 
         self.matchsys = matchsys
         
@@ -12,7 +11,7 @@ class DocVectorSearch(AbstractSearch):
         self.history_length = kwargs.get('history_length', 5)
 
 
-    def search(self, input_statement, **additional_parameters):
+    def search(self, input_statement):
         """
         TODO:完事流程
         先从数据库中找出相似的输入语句，在根据输入语句从数据库中查询出对应的对话，再根据相似度返回对话列表
