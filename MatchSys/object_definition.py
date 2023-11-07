@@ -32,6 +32,9 @@ class SemanticBase(object):
 
     extra_statement_field_names = []
 
+    def __repr__(self):
+        return '<Semantic predicate:%s, A0:%s, A1:%s, A2:%s>' % (self.predicate,self.A0,self.A1,self.A2)
+
     def get_statement_field_names(self):
         """
         Return the list of field names for the statement.

@@ -1,6 +1,6 @@
 from ..adapters import Adapter
 from ..storage import StorageAdapter
-from ..search import IndexedTextSearch,DocVectorSearch
+from ..search import DocVectorSearch
 from ..object_definition import Statement
 
 

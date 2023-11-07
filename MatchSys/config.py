@@ -3,7 +3,6 @@ import yaml
 
 
 def initialize(**kwargs):
-    print('Initializing')
     # bot名称 同时也是识别id
     global BOT_NAME
     # max_time_between_conversations 超过这个时常就判断为两个对话
@@ -19,9 +18,9 @@ def initialize(**kwargs):
     global VECTOR_MODEL_PATH
     global VECTOR_SIMILARITY_RATE_DIFF
 
+    global HEFENG_API_KEY 
     global data_path
     global parrot_model_path
-    global he_feng_key
     global activate_rasa
     global rasa_url
     global if_start_rasa
@@ -42,7 +41,6 @@ def initialize(**kwargs):
     command_similarity_rate=0.8
     config_file = open('./config.yml', encoding='utf-8')
     yml_config = yaml.load(config_file, Loader=yaml.FullLoader)
-    print(yml_config)
 
     BOT_NAME = kwargs.get('bot_name', yml_config['bot_name'])
     MAX_TIME_BETWEEN_CONVERSATION = kwargs.get('max_time_between_conversation',yml_config['max_time_between_conversation'])
@@ -58,17 +56,9 @@ def initialize(**kwargs):
     VECTOR_SIMILARITY_RATE_DIFF = kwargs.get('vector_simility_rate_diff',yml_config['vector_simility_rate_diff'])
     VECTOR_MODEL_PATH = kwargs.get('vector_model_path',yml_config['vector_model_path'])
 
+    HEFENG_API_KEY = kwargs.get('hefeng_api_key',yml_config['hefeng_api_key'])
+
     STATEMENT_TEXT_MAX_LENGTH = kwargs.get('STATEMENT_TEXT_MAX_LENGTH', yml_config['STATEMENT_TEXT_MAX_LENGTH'])
     CONVERSATION_LABEL_MAX_LENGTH =  kwargs.get('CONVERSATION_LABEL_MAX_LENGTH', yml_config['CONVERSATION_LABEL_MAX_LENGTH'])
     PERSONA_MAX_LENGTH =  kwargs.get('PERSONA_MAX_LENGTH', yml_config['PERSONA_MAX_LENGTH'])
     STOP_WORDS_PATH = kwargs.get('stop_words_path', yml_config['stop_words_path'])
-
-    with open('./config.yml',encoding='utf-8') as file:
-        data = yaml.load(file, Loader=yaml.FullLoader)
-
-
-        
-        command_similarity_rate = data['command_similarity_rate']
-        vector_similarity_rate = data['vector_similarity_rate']
-
-        text_vec_model_path = data['text_vec_model_path']

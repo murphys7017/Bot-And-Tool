@@ -19,7 +19,7 @@ excluded_words:
 
 
 # 和风api的用户key
-he_feng_key: 4fd5b28a9a27428e92dd14cada996806
+hefeng_api_key: 4fd5b28a9a27428e92dd14cada996806
 
 if_start_rasa: False
 command_similarity_rate: 0.8

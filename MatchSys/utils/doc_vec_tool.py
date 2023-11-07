@@ -25,7 +25,6 @@ class Doc2VecTool(object):
 
         if os.path.exists(self.text_vec_model_path):
             self.model = Doc2Vec.load(os.path.abspath(self.text_vec_model_path))
-            print("Parrot started")
 
     def remove_stopwords(self,words):
         import jieba

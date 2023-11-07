@@ -98,8 +98,3 @@ class IdWorker(object):
         while timestamp <= last_timestamp:
             timestamp = self._gen_timestamp()
         return timestamp
-
-
-
-worker = IdWorker(1, 2, 0)
-print(worker.get_id())

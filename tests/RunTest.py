@@ -22,7 +22,7 @@ def get_weather_abstract_by_hefeng(input_statement):
     get_location_url = 'https://geoapi.qweather.com/v2/city/lookup'
     address = input_statement.text.split('天气怎么样')[0]
     get_loction_params = {
-        'key': config.SERVICE_CONFIG.he_feng_key,
+        'key': config,
         'location': address
     }
     location_data = requests.get(get_location_url,get_loction_params).json()

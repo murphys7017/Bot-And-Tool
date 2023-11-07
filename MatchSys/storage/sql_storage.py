@@ -117,14 +117,21 @@ class SQLStorageAdapter(StorageAdapter):
 
         query = session.query(Statement).filter_by(text=text).all()
         return query
-    # TODO: 思考匹配规则，semantic中没有statement id
+    # TODO: 输入为semantic 先匹配predicate和对应元素非空的，然后根据规则返回结果
     def get_semantics_by_text(self, text):
         Semantic = self.get_model('semantic')
         session = self.Session()
-
         return session.query(Semantic).filter_by(predicate=text).all()
         
+    def semantic_filter(self, input_semantic):
+        Semantic = self.get_model('semantic')
+        session = self.Session()
 
+        semantics = session.query(Semantic).filter(
+            Semantic.predicate == input_semantic.predicate
+            
+            )
+        return semantics
     def filter(self, **kwargs):
         """
         Returns a list of objects from the database.

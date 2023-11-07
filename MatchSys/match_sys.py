@@ -88,7 +88,7 @@ class MatchSys(object):
         message_adapter_names = kwargs.get('message_adapters', ['MatchSys.message.TextMessageAdapter'])
         storage_adapter_name = kwargs.get('storage_adapter', 'MatchSys.storage.SQLStorageAdapter')
         # TODO:完善intent search
-        search_adapters_name_list = kwargs.get('search_adapters_name_list', ['MatchSys.search.DocVectorSearch','MatchSys.search.TextSearch'])
+        search_adapters_name_list = kwargs.get('search_adapters_name_list', ['MatchSys.search.DocVectorSearch','MatchSys.search.TextSearch','MatchSys.search.IntentTextSearch'])
         logic_adapter_name_list = kwargs.get('logic_adapters', ['MatchSys.logic.BestMatch'])
 
         # 初始化消息处理器
@@ -129,7 +129,14 @@ class MatchSys(object):
         # 日志
         self.logger = kwargs.get('logger', logging.getLogger(__name__))
         self.snowflake = IdWorker(1,1,1)
-        kwargs['ltp'] = LTP(ltp_model_path)
+        ltp = LTP(ltp_model_path)
+        kwargs['ltp'] = ltp
+        # 将模型移动到 GPU 上
+        import torch
+        if torch.cuda.is_available():
+            # ltp.cuda()
+            ltp.to("cuda")
+        kwargs['ltp'] = ltp
         # 文本向量化工具
         self.docvector_tool = Doc2VecTool(**kwargs)
   

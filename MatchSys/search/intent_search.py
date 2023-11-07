@@ -1,7 +1,7 @@
 from .search_adapter import SearchAdapter
 
 
-class TextSearch(SearchAdapter):
+class IntentTextSearch(SearchAdapter):
     """
     """
 
@@ -26,13 +26,11 @@ class TextSearch(SearchAdapter):
     def search(self, input_statement):
         self.matchsys.logger.info('Beginning search for text_search')
         # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement
-        input_statement_list = []
-        for statement in self.matchsys.storage.get_statements_by_text(input_statement.text):
-            statement = self.matchsys.storage.model_to_object(statement)
-            input_statement_list.append(statement)
+        input_statement_semantics = input_statement.semantics
+        for input_statement_semantic in input_statement_semantics:
+            semantics = self.matchsys.storage.get_semantics_by_text(input_statement_semantic.predicate)
+            print(semantics)
 
-        self.matchsys.logger.info('Processing search results')
-
-        return self.build_statement_chain(input_statement_list)
+        return self.build_statement_chain([])
 
 

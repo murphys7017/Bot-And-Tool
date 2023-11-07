@@ -99,13 +99,13 @@ class MessageAdapter(object):
         result = self.ltp.pipeline(text[0], tasks=["cws","srl"])
 
         kwargs['search_text'] = ' '.join(result.cws)
+        semantics = []
         if len(result.srl) > 0:
             t = result.srl[0]
             for item in result.srl:
-                if len(t['arguments']) > len(item['arguments']):
-                    t = item
-            kwargs['intent'] = json.dumps(t)
-
+                item['arguments'].append(('id',self.snowflake.get_id()))
+                semantics.append(Semantic(item)) 
+        kwargs['semantics'] = semantics
         input_statement = Statement(**kwargs)
         return input_statement
     def text_process_list(self, text_list,**kwargs):
