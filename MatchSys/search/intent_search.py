@@ -25,11 +25,18 @@ class IntentTextSearch(SearchAdapter):
 
     def search(self, input_statement):
         self.matchsys.logger.info('Beginning search for text_search')
-        # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement
         input_statement_semantics = input_statement.semantics
+        maybe_semantics_id = []
         for input_statement_semantic in input_statement_semantics:
+            input_not_null = input_statement_semantic.get_not_null()
             semantics = self.matchsys.storage.get_semantics_by_text(input_statement_semantic.predicate)
-            print(semantics)
+            for semantic in semantics:
+                db_not_null = semantic.get_not_null()
+                if input_not_null.keys() == db_not_null.keys():
+                    maybe_semantics_id.append(semantic.id)
+                    print(input_not_null.keys())
+
+                
 
         return self.build_statement_chain([])
 

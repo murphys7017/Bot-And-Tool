@@ -46,6 +46,8 @@ class SQLStorageAdapter(StorageAdapter):
             self.create_database()
 
         self.Session = sessionmaker(bind=self.engine, expire_on_commit=True)
+    
+
 
     def get_statement_model(self):
         """
@@ -132,6 +134,10 @@ class SQLStorageAdapter(StorageAdapter):
             
             )
         return semantics
+    def get_statement_by_semantic(self, semantic):
+        Semantic = self.get_model('semantic')
+        Statement = self.get_model('statement')
+
     def filter(self, **kwargs):
         """
         Returns a list of objects from the database.

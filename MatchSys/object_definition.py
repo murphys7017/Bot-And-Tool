@@ -31,6 +31,19 @@ class SemanticBase(object):
     ]
 
     extra_statement_field_names = []
+    def get_not_null(self):
+        res = {}
+        for name in self.statement_field_names:
+            value = self.__dict__[name]
+            if value is not None or value is not '':
+                if isinstance(value,int):
+                    pass
+                else:
+                    value = value.strip()
+                    if len(value) > 0:
+                        res[name] = value 
+        return res
+    
 
     def __repr__(self):
         return '<Semantic predicate:%s, A0:%s, A1:%s, A2:%s>' % (self.predicate,self.A0,self.A1,self.A2)
