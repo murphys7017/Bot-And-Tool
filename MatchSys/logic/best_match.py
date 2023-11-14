@@ -44,6 +44,7 @@ class BestMatch(LogicAdapter):
         search_results = []
         for search_adapter in  self.matchsys.search_adapters:
             search_results = search_results + search_adapter.search(input_statement)
+        search_results=list(set(search_results))
         response_list = []
         # Search for the closest match to the input statement
         for result in search_results:
@@ -63,10 +64,11 @@ class BestMatch(LogicAdapter):
             for key,value in same_result_mark.items():
                 if value['count'] > self.frequency_match_statements:
                     results.append(same_result_mark[key]['result'])
-            response = results[0]
-            for result in results:
-                if response.mark < result.mark:
-                    response = result
-            return response
-        else:
-            return self.default_responses_process(input_statement)
+            if len(results) > 0:
+                response = results[0]
+                for result in results:
+                    if response.mark < result.mark:
+                        response = result
+                return response
+        
+        return self.default_responses_process(input_statement)

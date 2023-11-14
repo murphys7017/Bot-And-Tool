@@ -35,10 +35,7 @@ class MessageAdapter(object):
         检查消息是否符合处理器要求，返回True or False
         """
         if message is None or message == '':
-            raise self.ChatBotException(
-                'Either a statement object or a "text" keyword '
-                'argument is required. Neither was provided.'
-            )
+            return False
         
         return True
     def process_2_output(self, statement):

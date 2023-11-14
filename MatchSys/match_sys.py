@@ -156,7 +156,7 @@ class MatchSys(object):
         for messageadapter in self.message_adapters.values():
             if messageadapter.check(message):
                 return messageadapter
-        return self.message_adapters['TextMessageAdapter']
+        return None
     
     def get_response(self, message=None, **kwargs):
         
@@ -180,6 +180,8 @@ class MatchSys(object):
         response = None
         # 匹配一个合适的消息处理器,请务必区分清每个处理器的判断规则，只会使用最后一个符合的
         message_adapter = self.get_message_adapter(message)
+        if message_adapter is None:
+            return None
         input_statement = message_adapter.process(message)
     
         if input_statement is not None:

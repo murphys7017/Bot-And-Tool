@@ -191,7 +191,7 @@ class Statement(Base, StatementMixin):
     semantics = relationship(
         'Semantic',
         secondary=lambda: semantic_association_table,
-        backref='statements'
+        backref='statement'
     )
 
     persona = Column(

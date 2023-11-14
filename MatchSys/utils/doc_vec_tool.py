@@ -31,11 +31,18 @@ class Doc2VecTool(object):
         return jieba.lcut_for_search(words)
         # return words
     def train(self,statements):
+        import time
+        start = time.perf_counter()
         if self.model is not None:
+            print("updating model")
             self.update_model(statements)
+            
         else:
+            print("training model")
             self.train_model(statements)
-        self.save_model(self.text_vec_model_path)
+        self.save_model(self.text_vec_model_path+"new_model")
+        end = time.perf_counter()
+        print("运行时间：", end - start, "秒")
 
     def build_tokenzied(self,statements):
         from gensim.models.doc2vec import TaggedDocument
@@ -55,8 +62,11 @@ class Doc2VecTool(object):
         
     
     def save_model(self,save_path):
-        import os
-        self.model.save(os.path.abspath(save_path))
+        from gensim.test.utils import get_tmpfile
+        from gensim.models import Doc2Vec
+        fname = get_tmpfile(save_path)
+        self.model.save(fname)
+        self.model = Doc2Vec.load(fname)  # you can continue training with the loaded model!
         
     def inferred2string(self,words):
         # TODO: 计划两种匹配模式 1.最相似的n项 2.相似率差别大于vector_similarity_rate_diff的

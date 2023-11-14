@@ -134,9 +134,6 @@ class SQLStorageAdapter(StorageAdapter):
             
             )
         return semantics
-    def get_statement_by_semantic(self, semantic):
-        Semantic = self.get_model('semantic')
-        Statement = self.get_model('statement')
 
     def filter(self, **kwargs):
         """
@@ -240,9 +237,11 @@ class SQLStorageAdapter(StorageAdapter):
         return statement_object
 
     def create_many(self, statements):
+        import time
         """
         Creates multiple statement entries.
         """
+        start = time.perf_counter()
         Statement = self.get_model('statement')
         Semantic = self.get_model('semantic')
 
@@ -269,6 +268,8 @@ class SQLStorageAdapter(StorageAdapter):
 
         session.add_all(create_statements)
         session.commit()
+        end = time.perf_counter()
+        print("运行时间：", end - start, "秒")
 
     def update(self, statement):
         """

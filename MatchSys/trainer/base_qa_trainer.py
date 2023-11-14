@@ -32,7 +32,7 @@ class QATrainer(Trainer):
         #     )
         #     input_statements.append(message_adapter.process(key,**kwargs))
         input_statements = message_adapter.process_list(list(conversation.keys()),**kwargs)
-
+        # TODO: 优化 同样对回复进行处理，一个问答一个问答分批处理太浪费时间
         for index,input_statement in enumerate(input_statements):
                 print_progress_bar(
                     'QA Trainer',
