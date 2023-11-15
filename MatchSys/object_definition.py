@@ -35,7 +35,7 @@ class SemanticBase(object):
         res = {}
         for name in self.statement_field_names:
             value = self.__dict__[name]
-            if value is not None or value is not '':
+            if value is not None or value != '':
                 if isinstance(value,int):
                     pass
                 else:

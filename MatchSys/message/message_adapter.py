@@ -22,6 +22,7 @@ class MessageAdapter(object):
 
         self.ltp = kwargs.get('ltp', None)
         if self.ltp is None:
+            print('ltp not found')
             from ltp import LTP
             ltp_model_path = kwargs.get('ltp_model_path', 'LTP/small')
             self.ltp = LTP(ltp_model_path)

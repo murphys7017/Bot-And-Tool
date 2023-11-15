@@ -5,6 +5,7 @@ class Doc2VecTool(object):
     model = None
     TaggedDocument = None
     def __init__(self, **kwargs):
+        print(kwargs)
         """
         vector_similarity_ratex 相似率大于这个值才会添加到返回集中
         most_similar_number 一次匹配取多少个结果

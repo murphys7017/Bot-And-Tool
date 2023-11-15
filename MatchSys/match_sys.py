@@ -130,7 +130,6 @@ class MatchSys(object):
         self.logger = kwargs.get('logger', logging.getLogger(__name__))
         self.snowflake = IdWorker(1,1,1)
         ltp = LTP(ltp_model_path)
-        kwargs['ltp'] = ltp
         # 将模型移动到 GPU 上
         import torch
         if torch.cuda.is_available():
@@ -138,6 +137,7 @@ class MatchSys(object):
             ltp.to("cuda")
         kwargs['ltp'] = ltp
         # 文本向量化工具
+        print(kwargs)
         self.docvector_tool = Doc2VecTool(**kwargs)
   
         
