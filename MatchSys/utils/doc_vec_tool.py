@@ -62,11 +62,8 @@ class Doc2VecTool(object):
         
     
     def save_model(self,save_path):
-        from gensim.test.utils import get_tmpfile
-        from gensim.models import Doc2Vec
-        fname = get_tmpfile(save_path)
-        self.model.save(fname)
-        self.model = Doc2Vec.load(fname)  # you can continue training with the loaded model!
+        import os
+        self.model.save(os.path.abspath(save_path))
         
     def inferred2string(self,words):
         # TODO: 计划两种匹配模式 1.最相似的n项 2.相似率差别大于vector_similarity_rate_diff的

@@ -27,11 +27,11 @@ class QATrainer(Trainer):
             statements_to_create.append(input_statement)
             ans_statements = message_adapter.process_list(value,**{'type_of':'A','persona':'bot:'+self.matchsys.name})
             for ans_statement in ans_statements:
-                ans_statement.previous_id = input_statement.previous_id
+                ans_statement.previous_id = input_statement.id
                 statements_to_create.append(ans_statement)
             print_progress_bar(
-                    'QA Trainer',
-                    index + 1, len(conversation)
+                'QA Trainer',
+                index + 1, len(conversation)
             )
 
         self.matchsys.storage.create_many(statements_to_create)

@@ -21,7 +21,8 @@ class IntentTextSearch(SearchAdapter):
     5.处理参数
     """
     def get_predicate_list(self,input_statement):
-        predicates = self.matchsys.storage.get_semantics_by_text(input_statement)
+        # predicates = self.matchsys.storage.get_semantics_by_text(input_statement)
+        pass
 
     def search(self, input_statement):
         self.matchsys.logger.info('Beginning search for text_search')
@@ -29,11 +30,11 @@ class IntentTextSearch(SearchAdapter):
         maybe = []
         for input_statement_semantic in input_statement_semantics:
             input_not_null = input_statement_semantic.get_not_null()
-            semantics = self.matchsys.storage.get_semantics_by_text(input_statement_semantic.predicate)
-            for semantic in semantics:
+            for semantic in self.matchsys.storage.get_semantics_by_text(input_statement_semantic.predicate):
                 db_not_null = semantic.get_not_null()
                 if input_not_null.keys() == db_not_null.keys():
-                    maybe.append(self.matchsys.storage.model_to_object(semantic.statement[0]))
+                    # maybe.append(self.matchsys.storage.model_to_object(semantic.statement[0]))
+                    maybe.append(semantic.statement[0])
 
         return self.build_statement_chain(maybe)
 

@@ -15,10 +15,9 @@ class SearchAdapter(Adapter):
 
         for statement in statements:
             if statement.type_of == 'Q':
-                results =  self.matchsys.storage.get_statements_by_previous_id(statement.id)
                 statement.predict_statements = []
-                for result in results:
-                    result = self.matchsys.storage.model_to_object(result)
+                for result in self.matchsys.storage.get_statements_by_previous_id(statement.id):
+                    # result = self.matchsys.storage.model_to_object(result)
                     statement.predict_statements.append(result)
                 
             if statement.type_of == 'CHAT':
@@ -26,9 +25,9 @@ class SearchAdapter(Adapter):
                 per_statement = statement
                 for i in range(self.history_length):
                     per_statement = self.matchsys.storage.get_statement_by_id(per_statement.previous_id)
-                    per_statement = self.matchsys.storage.model_to_object(per_statement)
+                    # per_statement = self.matchsys.storage.model_to_object(per_statement)
                     next_statement = self.matchsys.storage.get_statement_by_id(next_statement.next_id)
-                    next_statement = self.matchsys.storage.model_to_object(next_statement)
+                    # next_statement = self.matchsys.storage.model_to_object(next_statement)
                     statement.history_statements.append(per_statement)
                     statement.predict_statements.append(next_statement)
             if statement.type_of == 'TASK':

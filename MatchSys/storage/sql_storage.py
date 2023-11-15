@@ -31,7 +31,12 @@ class SQLStorageAdapter(StorageAdapter):
         if not self.database_uri:
             self.database_uri = 'sqlite:///db.sqlite3'
 
-        self.engine = create_engine(self.database_uri)
+        self.engine = create_engine(self.database_uri,
+                                    pool_size=100,
+                                    pool_timeout=2,
+                                    pool_recycle=30,
+                                    max_overflow=0
+                                    )
 
         if self.database_uri.startswith('sqlite://'):
             from sqlalchemy.engine import Engine
@@ -65,8 +70,13 @@ class SQLStorageAdapter(StorageAdapter):
 
     def model_to_object(self, statement):
         from MatchSys.object_definition import Statement as StatementObject
-
-        return StatementObject(**statement.serialize())
+        from MatchSys.object_definition import Semantic as SemanticObject
+        from MatchSys.storage.model_definition import Statement as StatementModel
+        from MatchSys.storage.model_definition import Semantic as SemanticModel
+        if isinstance(statement, SemanticModel):
+            return StatementObject(**statement.serialize())
+        if isinstance(statement, StatementModel):
+            return SemanticObject(**statement.serialize())
 
     def count(self):
         """
@@ -100,40 +110,54 @@ class SQLStorageAdapter(StorageAdapter):
         session = self.Session()
 
         query = session.query(Statement).filter_by(id=id).first()
+        query = self.model_to_object(query)
+        session.close()
         return query
     def get_statements_by_id(self, id):
         Statement = self.get_model('statement')
         session = self.Session()
 
         query = session.query(Statement).filter_by(id=id).all()
+        session.close()
         return query
     def get_statements_by_previous_id(self, id):
         Statement = self.get_model('statement')
         session = self.Session()
 
         query = session.query(Statement).filter_by(previous_id=id).all()
-        return query
+        for statement in query:
+            yield self.model_to_object(statement)
+        
+        session.close()
     def get_statements_by_text(self, text):
         Statement = self.get_model('statement')
         session = self.Session()
 
         query = session.query(Statement).filter_by(text=text).all()
-        return query
+        for statement in query:
+            yield self.model_to_object(statement)
+        
+        session.close()
     # TODO: 输入为semantic 先匹配predicate和对应元素非空的，然后根据规则返回结果
     def get_semantics_by_text(self, text):
         Semantic = self.get_model('semantic')
         session = self.Session()
-        return session.query(Semantic).filter_by(predicate=text).all()
+        res = session.query(Semantic).filter_by(predicate=text).all()
+        for semantic in res:
+            yield self.model_to_object(semantic)
         
-    def semantic_filter(self, input_semantic):
-        Semantic = self.get_model('semantic')
-        session = self.Session()
+        session.close()
+        
+    # def semantic_filter(self, input_semantic):
+    #     Semantic = self.get_model('semantic')
+    #     session = self.Session()
 
-        semantics = session.query(Semantic).filter(
-            Semantic.predicate == input_semantic.predicate
+    #     semantics = session.query(Semantic).filter(
+    #         Semantic.predicate == input_semantic.predicate
             
-            )
-        return semantics
+    #         )
+    #     session.close()
+    #     return semantics
 
     def filter(self, **kwargs):
         """

@@ -21,7 +21,7 @@ class DocVectorSearch(SearchAdapter):
         input_statement_list = []
         for input_statement_id in self.matchsys.docvector_tool.inferred2string(input_statement.search_text.split(' ')):
             statement = self.matchsys.storage.get_statement_by_id(int(input_statement_id))
-            statement = self.matchsys.storage.model_to_object(statement)
+            # statement = self.matchsys.storage.model_to_object(statement)
             input_statement_list.append(statement)
 
         self.matchsys.logger.info('Processing search results')
