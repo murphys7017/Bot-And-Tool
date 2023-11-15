@@ -19,7 +19,7 @@ trainer = QATrainer(ms)
 import pandas as pd
 map = {}
 # data = pd.read_excel(r'C:\Users\Administrator\Documents\GitHub\QQ-Bot-And-Tool\data\FixedReply\傲娇系二次元bot词库5千词V1.2.xlsx',header=None, sheet_name=0)
-data = pd.read_excel(r"C:\Users\Administrator\Documents\GitHub\QQ-Bot-And-Tool\data\FixedReply\可爱系二次元bot词库1.5万词V1.2.xlsx",header=None, sheet_name=0)
+data = pd.read_excel(r"C:\Users\Administrator\Documents\GitHub\QQ-Bot-And-Tool\data\FixedReply\Test.xlsx",header=None, sheet_name=0)
 for index,row in data.iterrows():
     if row[0] in map:
         map[row[0]].append(row[1])
@@ -27,13 +27,4 @@ for index,row in data.iterrows():
         map[row[0]] = [row[1]]
   
         
-count = 0
-temp ={}
-for key,value in map.items():
-    temp[key] = value
-    if len(temp) > 20:
-        print("data len 20")
-        trainer.train(temp)
-        temp = {}
-        break
-# trainer.train(temp)
+trainer.train(map)
