@@ -102,7 +102,8 @@ class Semantic(SemanticBase):
 
     extra_statement_field_names = []
 
-    def __init__(self,data):
+    def __init__(self,data,**kwargs):
+        
         arguments = data['arguments']
         for field in self.statement_field_names:
             setattr(self, field, '')
