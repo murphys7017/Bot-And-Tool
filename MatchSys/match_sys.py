@@ -91,6 +91,14 @@ class MatchSys(object):
         search_adapters_name_list = kwargs.get('search_adapters_name_list', ['MatchSys.search.DocVectorSearch','MatchSys.search.TextSearch','MatchSys.search.IntentTextSearch'])
         logic_adapter_name_list = kwargs.get('logic_adapters', ['MatchSys.logic.BestMatch'])
 
+        ltp = LTP(ltp_model_path)
+        # 将模型移动到 GPU 上
+        import torch
+        if torch.cuda.is_available():
+            # ltp.cuda()
+            ltp.to("cuda")
+        kwargs['ltp'] = ltp
+
         # 初始化消息处理器
         self.message_adapters = {}
         for message_adapter_name in message_adapter_names:
@@ -129,15 +137,8 @@ class MatchSys(object):
         # 日志
         self.logger = kwargs.get('logger', logging.getLogger(__name__))
         self.snowflake = IdWorker(1,1,1)
-        ltp = LTP(ltp_model_path)
-        # 将模型移动到 GPU 上
-        import torch
-        if torch.cuda.is_available():
-            # ltp.cuda()
-            ltp.to("cuda")
-        kwargs['ltp'] = ltp
+       
         # 文本向量化工具
-        print(kwargs)
         self.docvector_tool = Doc2VecTool(**kwargs)
   
         
