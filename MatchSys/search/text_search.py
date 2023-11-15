@@ -9,7 +9,7 @@ class TextSearch(SearchAdapter):
     name = 'text_search'
 
     def __init__(self, matchsys, **kwargs):
-        self.matchsys = matchsys
+        SearchAdapter.__init__(self, matchsys, **kwargs)
 
     @get_time
     def search(self, input_statement):

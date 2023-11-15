@@ -1,7 +1,8 @@
+from MatchSys.search.search_adapter import SearchAdapter
 from MatchSys.utils import get_time
 
 
-class IndexedTextSearch:
+class IndexedTextSearch(SearchAdapter):
     """
     :param statement_comparison_function: A comparison class.
         Defaults to ``LevenshteinDistance``.
@@ -14,9 +15,9 @@ class IndexedTextSearch:
     name = 'indexed_text_search'
 
     def __init__(self, matchsys, **kwargs):
+        SearchAdapter.__init__(self, matchsys, **kwargs)
         from MatchSys.comparisons import LevenshteinDistance
 
-        self.matchsys = matchsys
 
         statement_comparison_function = kwargs.get(
             'statement_comparison_function',

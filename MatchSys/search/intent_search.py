@@ -9,7 +9,7 @@ class IntentTextSearch(SearchAdapter):
     name = 'intent_search'
 
     def __init__(self, matchsys, **kwargs):
-        self.matchsys = matchsys
+        SearchAdapter.__init__(self, matchsys, **kwargs)
     
     """
     搜索predicate，从中找出意图相似的

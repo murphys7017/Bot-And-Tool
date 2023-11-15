@@ -151,8 +151,12 @@ class MessageAdapter(object):
             if len(srl) > 0:
                 t = srl[0]
                 for item in srl:
-                    item['arguments'].append(('id',self.snowflake.get_id()))
-                    semantics.append(Semantic(item)) 
+                    temp = {}
+                    temp['id'] = self.snowflake.get_id()
+                    temp['predicate'] = item['predicate']
+                    for arg in item['arguments']:
+                        temp[arg[0]] = arg[1]
+                    semantics.append(Semantic(**temp))
             kwargs_['semantics'] = semantics
     
             input_statements.append(Statement(**kwargs_))

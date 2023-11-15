@@ -1,6 +1,8 @@
 """
 Match Core
 """
+
+
 class Doc2VecTool(object):
     model = None
     TaggedDocument = None
@@ -31,24 +33,25 @@ class Doc2VecTool(object):
         return jieba.lcut_for_search(words)
         # return words
     def train(self,statements):
-        import time
-        start = time.perf_counter()
         if self.model is not None:
             print("updating model")
-            self.update_model(statements)
+            self.model = self.update_model(statements)
             
         else:
             print("training model")
             self.train_model(statements)
-        self.save_model(self.text_vec_model_path+"new_model")
-        end = time.perf_counter()
-        print("运行时间：", end - start, "秒")
+        self.save_model(self.text_vec_model_path)
 
     def build_tokenzied(self,statements):
         from gensim.models.doc2vec import TaggedDocument
         tokenized = []
         for statement in statements:
-            if statement.previous_id is None or statement.previous_id == '' or statement.previous_id == 0:
+            # TODO: 这是什么玩意啊，我为啥要加这个判断
+            # 明白了，过滤QA中的A
+            if statement.type_of == 'QA':
+                if statement.previous_id is None or statement.previous_id == '' or statement.previous_id == 0:
+                    tokenized.append(TaggedDocument(statement.search_text.split(' '),tags=[str(statement.id)]))
+            else:
                 tokenized.append(TaggedDocument(statement.search_text.split(' '),tags=[str(statement.id)]))
         return tokenized
     
@@ -63,7 +66,7 @@ class Doc2VecTool(object):
     
     def save_model(self,save_path):
         import os
-        self.model.save(os.path.abspath(save_path))
+        self.model.save_word2vec_format(os.path.abspath(save_path),doctag_vec=True, word_vec=True, binary=True)
         
     def inferred2string(self,words):
         # TODO: 计划两种匹配模式 1.最相似的n项 2.相似率差别大于vector_similarity_rate_diff的
@@ -80,8 +83,12 @@ class Doc2VecTool(object):
         return res
     
     def update_model(self,statements):
-        tokenized = self.build_tokenzied(statements)
+        import os
+        from gensim.models import Doc2Vec
 
-        if len(tokenized) > 0:
-            self.model.build_vocab(tokenized,update=True) #注意update = True 这个参数很重要
-            self.model.train(tokenized,total_examples=self.model.corpus_count,epochs=100)
+        tokenized = self.build_tokenzied(statements)
+        model = Doc2Vec.load(os.path.abspath(self.text_vec_model_path))
+        model.build_vocab(tokenized, update=True)
+        model.train(tokenized,total_examples=self.model.corpus_count,epochs=100)
+
+        return model
