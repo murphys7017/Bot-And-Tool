@@ -99,10 +99,13 @@ class MessageAdapter(object):
         kwargs['search_text'] = ' '.join(result.cws)
         semantics = []
         if len(result.srl) > 0:
-            t = result.srl[0]
             for item in result.srl:
-                item['arguments'].append(('id',self.snowflake.get_id()))
-                semantics.append(Semantic(item)) 
+                temp = {}
+                temp['id'] = self.snowflake.get_id()
+                temp['predicate'] = item['predicate']
+                for arg in item['arguments']:
+                    temp[arg[0]] = arg[1]
+                semantics.append(Semantic(**temp)) 
         kwargs['semantics'] = semantics
         input_statement = Statement(**kwargs)
         return input_statement

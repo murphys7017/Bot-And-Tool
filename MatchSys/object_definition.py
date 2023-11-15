@@ -35,13 +35,14 @@ class SemanticBase(object):
         res = {}
         for name in self.statement_field_names:
             value = self.__dict__[name]
-            if value is not None or value != '':
-                if isinstance(value,int):
-                    pass
-                else:
-                    value = value.strip()
-                    if len(value) > 0:
-                        res[name] = value 
+            if value:
+                if value != '':
+                    if isinstance(value,int):
+                        pass
+                    else:
+                        value = value.strip()
+                        if len(value) > 0:
+                            res[name] = value 
         return res
     
 
@@ -102,14 +103,11 @@ class Semantic(SemanticBase):
 
     extra_statement_field_names = []
 
-    def __init__(self,data,**kwargs):
-        
-        arguments = data['arguments']
+    def __init__(self,**kwargs):
         for field in self.statement_field_names:
-            setattr(self, field, '')
-        for item in arguments:
-            setattr(self, item[0][-3:], item[1])
-        self.predicate = data['predicate']
+            setattr(self,field,None)
+        for key,value in kwargs.items():
+            setattr(self,key,value)
 
     
 

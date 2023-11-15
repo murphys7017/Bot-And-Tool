@@ -13,9 +13,6 @@ import requests
 #     return abstract.text.strip() + '\n 详细信息：'+location_data['fxLink']
 
 
-
-
-
 def get_ghs_picture(tags=[]):
 
     if len(tags) > 0:

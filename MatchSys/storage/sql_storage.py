@@ -1,3 +1,4 @@
+from MatchSys.utils import get_time
 from .storage_adapter import StorageAdapter
 
 class SQLStorageAdapter(StorageAdapter):
@@ -31,12 +32,7 @@ class SQLStorageAdapter(StorageAdapter):
         if not self.database_uri:
             self.database_uri = 'sqlite:///db.sqlite3'
 
-        self.engine = create_engine(self.database_uri,
-                                    pool_size=100,
-                                    pool_timeout=2,
-                                    pool_recycle=30,
-                                    max_overflow=0
-                                    )
+        self.engine = create_engine(self.database_uri)
 
         if self.database_uri.startswith('sqlite://'):
             from sqlalchemy.engine import Engine
@@ -73,9 +69,9 @@ class SQLStorageAdapter(StorageAdapter):
         from MatchSys.object_definition import Semantic as SemanticObject
         from MatchSys.storage.model_definition import Statement as StatementModel
         from MatchSys.storage.model_definition import Semantic as SemanticModel
-        if isinstance(statement, SemanticModel):
-            return StatementObject(**statement.serialize())
         if isinstance(statement, StatementModel):
+            return StatementObject(**statement.serialize())
+        if isinstance(statement, SemanticModel):
             return SemanticObject(**statement.serialize())
 
     def count(self):
@@ -139,12 +135,13 @@ class SQLStorageAdapter(StorageAdapter):
         
         session.close()
     # TODO: 输入为semantic 先匹配predicate和对应元素非空的，然后根据规则返回结果
+    @get_time
     def get_semantics_by_text(self, text):
         Semantic = self.get_model('semantic')
         session = self.Session()
         res = session.query(Semantic).filter_by(predicate=text).all()
         for semantic in res:
-            yield self.model_to_object(semantic)
+            yield semantic
         
         session.close()
         

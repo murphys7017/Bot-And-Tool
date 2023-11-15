@@ -7,7 +7,7 @@ from .message import MessageAdapter
 from .storage import StorageAdapter
 from .logic import LogicAdapter
 from .search import SearchAdapter
-from .utils import Doc2VecTool,validate_adapter_class,initialize_class,import_module,IdWorker
+from .utils import Doc2VecTool, get_time,validate_adapter_class,initialize_class,import_module,IdWorker
 
 from ltp import LTP
 import difflib
@@ -158,7 +158,7 @@ class MatchSys(object):
             if messageadapter.check(message):
                 return messageadapter
         return None
-    
+    @get_time
     def get_response(self, message=None, **kwargs):
         
         """

@@ -6,6 +6,18 @@ from .response_selection import get_first_response, get_most_frequent_response
 这里主要保存一些工具类函数
 """
 
+def get_time(f):
+    import time
+
+    def inner(*arg,**kwarg):
+        start = time.perf_counter()
+        res = f(*arg,**kwarg)
+        end = time.perf_counter()
+        print('{} \t - \t 耗时：{}秒'.format(f.__qualname__, end - start))
+        return res
+    return inner
+
+
 def print_progress_bar(description, iteration_counter, total_items, progress_bar_length=20):
     """
     Print progress bar
@@ -133,7 +145,7 @@ __all__ = (
     'IdWorker',
 
     'Doc2VecTool',
-
+    'get_time',
   
     'get_recent_repeated_responses',
     'get_first_response',

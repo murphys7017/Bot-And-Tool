@@ -1,3 +1,4 @@
+from MatchSys.utils import get_time
 from .search_adapter import SearchAdapter
 
 
@@ -23,7 +24,8 @@ class IntentTextSearch(SearchAdapter):
     def get_predicate_list(self,input_statement):
         # predicates = self.matchsys.storage.get_semantics_by_text(input_statement)
         pass
-
+    
+    @get_time
     def search(self, input_statement):
         self.matchsys.logger.info('Beginning search for text_search')
         input_statement_semantics = input_statement.semantics
@@ -33,8 +35,8 @@ class IntentTextSearch(SearchAdapter):
             for semantic in self.matchsys.storage.get_semantics_by_text(input_statement_semantic.predicate):
                 db_not_null = semantic.get_not_null()
                 if input_not_null.keys() == db_not_null.keys():
-                    # maybe.append(self.matchsys.storage.model_to_object(semantic.statement[0]))
-                    maybe.append(semantic.statement[0])
+                    maybe.append(self.matchsys.storage.model_to_object(semantic.statement[0]))
+                    # maybe.append(semantic.statement[0])
 
         return self.build_statement_chain(maybe)
 

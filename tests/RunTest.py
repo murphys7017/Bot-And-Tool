@@ -1,6 +1,6 @@
 import sys
-# sys.path.append(r"C:\Users\Administrator\Documents\GitHub\QQ-Bot-And-Tool") 
-sys.path.append(r"D:\Code\MyLongTimeProject\Bot-And-Tool")
+sys.path.append(r"C:\Users\Administrator\Documents\GitHub\QQ-Bot-And-Tool") 
+# sys.path.append(r"D:\Code\MyLongTimeProject\Bot-And-Tool")
 from MatchSys import config
 from MatchSys import MatchSys
 ms = MatchSys(
@@ -32,9 +32,12 @@ def get_weather_abstract_by_hefeng(input_statement):
     abstract = soup.find_all('div', class_='current-abstract')[0]
     return abstract.text.strip() + '\n 详细信息：'+location_data['fxLink']
 
+
+
 while True:
     message = input('>')
     if message == 'exit':
         break
     else:
         print(ms.get_response(message))
+        
