@@ -46,7 +46,7 @@ class DocVectorSearch(SearchAdapter):
         print('DocVectorSearch Match {} result'.format(len(input_statement_list)))
         self.matchsys.logger.info('Processing search results')
 
-        return self.build_statement_chain(input_statement_list)
+        return input_statement_list
 
 
 

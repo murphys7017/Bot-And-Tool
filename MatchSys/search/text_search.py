@@ -22,6 +22,6 @@ class TextSearch(SearchAdapter):
 
         self.matchsys.logger.info('Processing search results')
 
-        return self.build_statement_chain(input_statement_list)
+        return input_statement_list
 
 

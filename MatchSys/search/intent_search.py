@@ -38,6 +38,6 @@ class IntentTextSearch(SearchAdapter):
                     maybe.append(self.matchsys.storage.model_to_object(semantic.statement[0]))
                     # maybe.append(semantic.statement[0])
 
-        return self.build_statement_chain(maybe)
+        return maybe
 
 

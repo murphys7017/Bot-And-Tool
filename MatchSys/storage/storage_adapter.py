@@ -67,7 +67,8 @@ class StorageAdapter(Adapter):
         raise self.AdapterMethodNotImplementedError(
             'The `remove` method is not implemented by this adapter.'
         )
-
+    def get_statement_by_id(self, statement_id):
+        pass
     def filter(self, **kwargs):
         """
         Returns a list of objects from the database.

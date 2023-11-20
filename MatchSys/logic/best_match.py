@@ -28,15 +28,12 @@ class BestMatch(LogicAdapter):
         self.min_confidence = kwargs.get('min_confidence',0.9)
         self.excluded_words = kwargs.get('excluded_words')
     
-    def compare_history(self, statement, input_statement):
-        if statement.type_of == 'Q':
-            return self.statement_comparison.compare(statement, input_statement)
-        if statement.type_of == 'CHAT':
-            similarity_rate = 0
-            for db_statement, history_statement in zip(statement.history_statements, self.matchsys.history):
-                similarity_rate += self.statement_comparison_function(db_statement, history_statement)
-            return similarity_rate
-        return -1
+    def compare_history(self, statement):
+        similarity_rate = 0
+        for db_statement, history_statement in zip(statement.history_statements, self.matchsys.history):
+            similarity_rate += self.statement_comparison_function(db_statement, history_statement)
+        return similarity_rate
+
     def default_responses_process(self, statement):
         return None
 
@@ -44,7 +41,7 @@ class BestMatch(LogicAdapter):
         response_list = []
         # Search for the closest match to the input statement
         for result in search_results:
-            if self.compare_history(result,input_statement) >= self.min_confidence:
+            if self.compare_history(result) >= self.min_confidence:
                 response_list.append(result)
 
         if len(response_list)>0:
@@ -67,4 +64,4 @@ class BestMatch(LogicAdapter):
                         response = result
                 return response
         
-        return self.default_responses_process(input_statement)
+        return self.default_responses_process('')

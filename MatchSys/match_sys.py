@@ -83,6 +83,7 @@ class MatchSys(object):
         self.command_handles = []
         self.name = kwargs.get('name', 'Alice')
         self.max_time_between_conversations = kwargs.get('max_time_between_conversations',30)
+        self.history_length = kwargs.get('history_length', 7)
 
         ltp_model_path = kwargs.get('ltp_model_path', 'LTP/small')
         message_adapter_names = kwargs.get('message_adapters', ['MatchSys.message.TextMessageAdapter'])
@@ -177,6 +178,7 @@ class MatchSys(object):
         """
 
         
+        
         input_statement = None
         response = None
         # 匹配一个合适的消息处理器,请务必区分清每个处理器的判断规则，只会使用最后一个符合的
@@ -184,6 +186,16 @@ class MatchSys(object):
         if message_adapter is None:
             return None
         input_statement = message_adapter.process(message)
+
+        # 将输入添加到历史对话中
+        chat_history = self.chat_history[:self.history_length*2]
+        chat_history.insert(0, input_statement)
+        # 判断是否为连续对话
+        if (input_statement.created_at - self.history[0].created_at).seconds > self.max_time_between_conversations:
+            pass
+        else:
+            pass
+
     
         if input_statement is not None:
             # 判断是否可以直接匹配到某些函数
@@ -225,24 +237,17 @@ class MatchSys(object):
 
         :param input_statement: The input statement to be processed.
         """
-        # 将输入添加到历史对话中
-        self.history = self.history[:15]
-        if len(self.history) > 0:
-            if (input_statement.created_at - self.history[0].created_at).seconds > self.max_time_between_conversations:
-                self.history.insert(0,input_statement)
-            else:
-                input_statement.previous_id = self.history[0].id
-                self.history.insert(0,input_statement)
+        
         #search
         search_results = []
         for search_adapter in  self.search_adapters:
             search_results = search_results + search_adapter.search(input_statement)
         search_results=list(set(search_results))
 
-        # logical matching
+        search_results = self.build_statement_chain(search_results)
 
-        result = None
-        # 获取所有的响应statement
+        # logical matching
+        logical_match_results = None
         for adapter in self.logic_adapters:
             # 检查是否符合处理器要求
             if adapter.can_process(input_statement):
@@ -262,3 +267,17 @@ class MatchSys(object):
             statement (_type_): _description_
         """
         pass
+    def build_statement_chain(self, statements):
+        all_result = []
+
+        for statement in statements:
+            chat_chain = [statement]
+            next_statement = statement
+            per_statement = statement
+            while chat_chain[0].next_id:
+                chat_chain.insert(0, self.matchsys.storage.get_statement_by_id(chat_chain[0].next_id))
+            while chat_chain[-1].previous_id:
+                chat_chain.append(self.matchsys.storage.get_statement_by_id(chat_chain[-1].previous_id))
+            print(chat_chain)
+            all_result.append(chat_chain)
+        return all_result
