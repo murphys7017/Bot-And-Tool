@@ -35,4 +35,10 @@ class QATrainer(Trainer):
             )
 
         self.matchsys.storage.create_many(statements_to_create)
-        self.matchsys.docvector_tool.train(statements_to_create)
+
+        for search_adapter in self.matchsys.search_adapters:
+            if search_adapter.need_train:
+                try:
+                    search_adapter.train()
+                except Exception as e:
+                    print(e)

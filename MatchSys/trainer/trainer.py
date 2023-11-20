@@ -32,6 +32,10 @@ class Trainer(object):
         """
         This method must be overridden by a child class.
         """
+        for search_adapter in self.matchsys.search_adapters:
+            if search_adapter.need_train:
+                # DO Training
+                pass
         raise self.TrainerInitializationException()
     def save(self, *args, **kwargs):
         pass

@@ -202,6 +202,7 @@ class MatchSys(object):
 
                 # Save the response generated for the input
                 # self.storage.create(**response.serialize())
+            # delete
             if response is not None:
                 res_text = message_adapter.process_2_output(response)
                 if res_text.startswith('FUNCTION:'):

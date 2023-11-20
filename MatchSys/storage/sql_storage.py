@@ -134,6 +134,12 @@ class SQLStorageAdapter(StorageAdapter):
             yield self.model_to_object(statement)
         
         session.close()
+    def get_all_statements(self):
+        Statement = self.get_model('statement')
+        session = self.Session()
+        query = session.query(Statement).all()
+        for statement in query:
+            yield self.model_to_object(statement)
     # TODO: 输入为semantic 先匹配predicate和对应元素非空的，然后根据规则返回结果
     @get_time
     def get_semantics_by_text(self, text):
@@ -256,13 +262,11 @@ class SQLStorageAdapter(StorageAdapter):
         self._session_finish(session)
 
         return statement_object
-
+    @get_time
     def create_many(self, statements):
-        import time
         """
         Creates multiple statement entries.
         """
-        start = time.perf_counter()
         Statement = self.get_model('statement')
         Semantic = self.get_model('semantic')
 
@@ -289,8 +293,6 @@ class SQLStorageAdapter(StorageAdapter):
 
         session.add_all(create_statements)
         session.commit()
-        end = time.perf_counter()
-        print("运行时间：", end - start, "秒")
 
     def update(self, statement):
         """
