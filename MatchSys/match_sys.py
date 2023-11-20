@@ -233,7 +233,14 @@ class MatchSys(object):
             else:
                 input_statement.previous_id = self.history[0].id
                 self.history.insert(0,input_statement)
-    
+        #search
+        search_results = []
+        for search_adapter in  self.search_adapters:
+            search_results = search_results + search_adapter.search(input_statement)
+        search_results=list(set(search_results))
+
+        # logical matching
+
         result = None
         # 获取所有的响应statement
         for adapter in self.logic_adapters:

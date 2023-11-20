@@ -40,11 +40,7 @@ class BestMatch(LogicAdapter):
     def default_responses_process(self, statement):
         return None
 
-    def process(self, input_statement):
-        search_results = []
-        for search_adapter in  self.matchsys.search_adapters:
-            search_results = search_results + search_adapter.search(input_statement)
-        search_results=list(set(search_results))
+    def process(self, search_results):
         response_list = []
         # Search for the closest match to the input statement
         for result in search_results:
