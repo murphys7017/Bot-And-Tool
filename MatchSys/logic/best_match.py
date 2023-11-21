@@ -25,43 +25,25 @@ class BestMatch(LogicAdapter):
         )
 
         self.frequency_match_statements = kwargs.get('frequency_match_statements', 1)
-        self.min_confidence = kwargs.get('min_confidence',0.9)
+        self.min_confidence = kwargs.get('min_confidence',0.7)
         self.excluded_words = kwargs.get('excluded_words')
     
-    def compare_history(self, statement):
+    def compare_history(self, per_chain):
         similarity_rate = 0
-        for db_statement, history_statement in zip(statement.history_statements, self.matchsys.history):
-            similarity_rate += self.statement_comparison_function(db_statement, history_statement)
+        for db_statement, history_statement in zip(per_chain, self.matchsys.chat_history):
+            similarity_rate += self.statement_comparison(db_statement, history_statement)
         return similarity_rate
 
-    def default_responses_process(self, statement):
-        return None
-
     def process(self, search_results):
-        response_list = []
-        # Search for the closest match to the input statement
-        for result in search_results:
-            if self.compare_history(result) >= self.min_confidence:
-                response_list.append(result)
-
-        if len(response_list)>0:
-          
-            results = []
-            same_result_mark = {}
-            for result in response_list:
-                if result.id in same_result_mark:
-                    same_result_mark[result.id]['count'] += 1
-                else:
-                    same_result_mark[result.id] = {'count':1,'result':result}
-                
-            for key,value in same_result_mark.items():
-                if value['count'] > self.frequency_match_statements:
-                    results.append(same_result_mark[key]['result'])
-            if len(results) > 0:
-                response = results[0]
-                for result in results:
-                    if response.mark < result.mark:
-                        response = result
-                return response
-        
-        return self.default_responses_process('')
+        response = None
+        similarity_rate = 0
+        print(search_results)
+        for statements in search_results:
+            per_chain = statements[0]
+            temp_similarity_rate = self.compare_history(per_chain)
+            if temp_similarity_rate > similarity_rate:
+                response = statements
+                similarity_rate = temp_similarity_rate
+        if similarity_rate < self.min_confidence:
+            response.text = '[小于最小置信度]' + response.text
+        return similarity_rate, response

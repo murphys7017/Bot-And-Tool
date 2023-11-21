@@ -11,7 +11,7 @@ class TextSearch(SearchAdapter):
     def __init__(self, matchsys, **kwargs):
         SearchAdapter.__init__(self, matchsys, **kwargs)
 
-    @get_time
+
     def search(self, input_statement):
         self.matchsys.logger.info('Beginning search for text_search')
         # TODO: inferred2string返回的是id和text 修改为根据id找到对应的statement

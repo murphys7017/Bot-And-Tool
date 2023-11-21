@@ -159,6 +159,7 @@ class Statement(Base, StatementMixin):
         nullable=False,
         server_default=''
     )
+    # TODO: delete
     intent = Column(
         String(config.STATEMENT_TEXT_MAX_LENGTH),
         server_default=''

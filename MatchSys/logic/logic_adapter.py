@@ -43,7 +43,7 @@ class LogicAdapter(Adapter):
             get_first_response
         )
     def default_responses_process(self, input_statement):
-        raise self.AdapterMethodNotImplementedError() 
+        return Statement(text='NO_MATCH_PASS')
 
         
 
@@ -80,12 +80,6 @@ class LogicAdapter(Adapter):
         """
         raise self.AdapterMethodNotImplementedError()
 
-    def get_default_response(self, input_statement):
-        """
-        This method is called when a logic adapter is unable to generate any
-        other meaningful response.
-        """
-        return Statement(text='NO_MATCH_PASS')
 
     @property
     def class_name(self):

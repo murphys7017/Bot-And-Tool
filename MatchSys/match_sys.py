@@ -78,7 +78,7 @@ class MatchSys(object):
         print("Starting initialization of MatchSys")
         config.initialize(**kwargs)
         
-        self.history = []
+        self.chat_history = []
         self.predict_dialogue = []
         self.command_handles = []
         self.name = kwargs.get('name', 'Alice')
@@ -144,7 +144,13 @@ class MatchSys(object):
   
         
 
-       
+    def load_functions(self):
+        pass
+    def message_handler(self, **kwargs):
+        def decorate(fn):
+            self.command_handles.append(HandleFunction(func=fn, **kwargs))
+            return fn
+        return decorate 
         
     def handle_function_declaration(self, **kwargs):
         """声明函数为消息处理函数的注解 @handle_function_declaration
@@ -188,11 +194,11 @@ class MatchSys(object):
         input_statement = message_adapter.process(message)
 
         # 将输入添加到历史对话中
-        chat_history = self.chat_history[:self.history_length*2]
-        chat_history.insert(0, input_statement)
+        self.chat_history = self.chat_history[:self.history_length*2]
+        self.chat_history.insert(0, input_statement)
         # 判断是否为连续对话
-        if (input_statement.created_at - self.history[0].created_at).seconds > self.max_time_between_conversations:
-            pass
+        if (input_statement.created_at - self.chat_history[0].created_at).seconds > self.max_time_between_conversations:
+            self.chat_history = [input_statement]
         else:
             pass
 
@@ -202,7 +208,7 @@ class MatchSys(object):
             for handle in self.command_handles:
                 if handle.check_power(input_statement) and handle.match(input_statement):
                     response =  handle.handle(input_statement,self)
-                    self.history[0].next_id = response.id
+                    self.chat_history[0].next_id = response.id
             
             if response is None:
                 # 生成响应Statement
@@ -222,7 +228,7 @@ class MatchSys(object):
                     for handle in self.command_handles:
                         if handle.function_id == function_name:
                             response =  handle.handle(input_statement,self)
-                            self.history[0].next_id = response.id
+                            self.chat_history[0].next_id = response.id
                             return message_adapter.process_2_output(response)
                 return res_text
     
@@ -247,19 +253,15 @@ class MatchSys(object):
         search_results = self.build_statement_chain(search_results)
 
         # logical matching
-        logical_match_results = None
+        similarity_rate = 0
+        response = None
         for adapter in self.logic_adapters:
-            # 检查是否符合处理器要求
             if adapter.can_process(input_statement):
-                
-                result = adapter.process(input_statement)
-                if result is not None:
-                    result.persona='bot:' + self.name
-                else:
-                    self.logger.info(
-                        'the input statement is null'
-                    )
-        return result
+                t_similarity_rate, t_response = adapter.process(search_results)
+                if t_similarity_rate > similarity_rate:
+                    similarity_rate = t_similarity_rate
+                    response = t_response
+        return response[1]
     
     def lean_response(self,statement):
         """排除QA型对话和Task型对话，主要学习Chat型对话，具体的触发lean_response函数的规则还没想好
@@ -271,13 +273,11 @@ class MatchSys(object):
         all_result = []
 
         for statement in statements:
-            chat_chain = [statement]
-            next_statement = statement
-            per_statement = statement
-            while chat_chain[0].next_id:
-                chat_chain.insert(0, self.matchsys.storage.get_statement_by_id(chat_chain[0].next_id))
-            while chat_chain[-1].previous_id:
-                chat_chain.append(self.matchsys.storage.get_statement_by_id(chat_chain[-1].previous_id))
-            print(chat_chain)
-            all_result.append(chat_chain)
+            next_statement = [statement]
+            per_statement = [statement]
+            while next_statement[0].next_id:
+                next_statement.insert(0, self.storage.get_statement_by_id(next_statement[0].next_id))
+            while per_statement[-1].previous_id:
+                per_statement.append(self.storage.get_statement_by_id(per_statement[-1].previous_id))
+            all_result.append((per_statement,next_statement))
         return all_result

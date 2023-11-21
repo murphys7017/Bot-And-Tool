@@ -141,7 +141,7 @@ class SQLStorageAdapter(StorageAdapter):
         for statement in query:
             yield self.model_to_object(statement)
     # TODO: 输入为semantic 先匹配predicate和对应元素非空的，然后根据规则返回结果
-    @get_time
+
     def get_semantics_by_text(self, text):
         Semantic = self.get_model('semantic')
         session = self.Session()

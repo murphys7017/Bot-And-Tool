@@ -29,7 +29,7 @@ class IndexedTextSearch(SearchAdapter):
         self.search_page_size = kwargs.get(
             'search_page_size', 1000
         )
-    @get_time
+
     def search(self, input_statement):
         """
         Search for close matches to the input. Confidence scores for
