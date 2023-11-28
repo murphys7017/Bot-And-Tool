@@ -39,6 +39,6 @@ class QATrainer(Trainer):
         for search_adapter in self.matchsys.search_adapters:
             if search_adapter.need_train:
                 try:
-                    search_adapter.train()
+                    search_adapter.train(data=statements_to_create)
                 except Exception as e:
                     print(e)

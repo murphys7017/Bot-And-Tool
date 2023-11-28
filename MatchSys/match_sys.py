@@ -84,6 +84,7 @@ class MatchSys(object):
         self.name = kwargs.get('name', 'Alice')
         self.max_time_between_conversations = kwargs.get('max_time_between_conversations',30)
         self.history_length = kwargs.get('history_length', 7)
+        self.need_ltp = kwargs.get('need_ltp',True)
 
         ltp_model_path = kwargs.get('ltp_model_path', 'LTP/small')
         message_adapter_names = kwargs.get('message_adapters', ['MatchSys.message.TextMessageAdapter'])
@@ -91,14 +92,14 @@ class MatchSys(object):
         # TODO:完善intent search
         search_adapters_name_list = kwargs.get('search_adapters_name_list', ['MatchSys.search.DocVectorSearch','MatchSys.search.TextSearch','MatchSys.search.IntentTextSearch'])
         logic_adapter_name_list = kwargs.get('logic_adapters', ['MatchSys.logic.BestMatch'])
-
-        ltp = LTP(ltp_model_path)
-        # 将模型移动到 GPU 上
-        import torch
-        if torch.cuda.is_available():
-            # ltp.cuda()
-            ltp.to("cuda")
-        kwargs['ltp'] = ltp
+        if self.need_ltp:
+            ltp = LTP(ltp_model_path)
+            # 将模型移动到 GPU 上
+            import torch
+            if torch.cuda.is_available():
+                # ltp.cuda()
+                ltp.to("cuda")
+            kwargs['ltp'] = ltp
 
         # 初始化消息处理器
         self.message_adapters = {}
