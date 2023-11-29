@@ -223,6 +223,7 @@ class MatchSys(object):
                 # self.storage.create(**response.serialize())
             # delete
             if response is not None:
+                print(response)
                 res_text = message_adapter.process_2_output(response)
                 if res_text.startswith('FUNCTION:'):
                     function_name = res_text.split(':')[1]
@@ -250,8 +251,9 @@ class MatchSys(object):
         for search_adapter in  self.search_adapters:
             search_results = search_results + search_adapter.search(input_statement)
         search_results=list(set(search_results))
-
+        print(search_results)
         search_results = self.build_statement_chain(search_results)
+        print(search_results)
 
         # logical matching
         similarity_rate = 0
@@ -262,6 +264,7 @@ class MatchSys(object):
                 if t_similarity_rate > similarity_rate:
                     similarity_rate = t_similarity_rate
                     response = t_response
+        print(response)
         return response[1]
     
     def lean_response(self,statement):
@@ -274,6 +277,7 @@ class MatchSys(object):
         all_result = []
 
         for statement in statements:
+            chat_chain = []
             next_statement = [statement]
             per_statement = [statement]
             while next_statement[0].next_id:

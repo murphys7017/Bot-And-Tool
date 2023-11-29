@@ -75,7 +75,7 @@ class FaissSearch(SearchAdapter):
             statement = self.matchsys.storage.get_statement_by_id(int(input_statement_id))
             # statement = self.matchsys.storage.model_to_object(statement)
             input_statement_list.append(statement)
-
+        print(input_statement_list)
         return input_statement_list
     
     def add_to_index(self,statements,save=False):
