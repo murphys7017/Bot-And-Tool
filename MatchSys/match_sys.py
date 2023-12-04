@@ -251,9 +251,7 @@ class MatchSys(object):
         for search_adapter in  self.search_adapters:
             search_results = search_results + search_adapter.search(input_statement)
         search_results=list(set(search_results))
-        print(search_results)
         search_results = self.build_statement_chain(search_results)
-        print(search_results)
 
         # logical matching
         similarity_rate = 0
@@ -264,8 +262,7 @@ class MatchSys(object):
                 if t_similarity_rate > similarity_rate:
                     similarity_rate = t_similarity_rate
                     response = t_response
-        print(response)
-        return response[1]
+        return response
     
     def lean_response(self,statement):
         """排除QA型对话和Task型对话，主要学习Chat型对话，具体的触发lean_response函数的规则还没想好
@@ -274,15 +271,21 @@ class MatchSys(object):
         """
         pass
     def build_statement_chain(self, statements):
+        print("search statements:")
         all_result = []
 
         for statement in statements:
-            chat_chain = []
-            next_statement = [statement]
-            per_statement = [statement]
-            while next_statement[0].next_id:
-                next_statement.insert(0, self.storage.get_statement_by_id(next_statement[0].next_id))
-            while per_statement[-1].previous_id:
-                per_statement.append(self.storage.get_statement_by_id(per_statement[-1].previous_id))
-            all_result.append((per_statement,next_statement))
+            if statement.type_of == 'Q':
+                chat_chain = [statement]
+                for res in self.storage.get_statements_by_previous_id(statement.id):
+                    chat_chain.append(res)
+                all_result.append(chat_chain)
+            else:
+                next_statement = [statement]
+                per_statement = [statement]
+                while next_statement[0].next_id:
+                    next_statement.insert(0, self.storage.get_statement_by_id(next_statement[0].next_id))
+                while per_statement[-1].previous_id:
+                    per_statement.append(self.storage.get_statement_by_id(per_statement[-1].previous_id))
+                all_result.append((per_statement,next_statement))
         return all_result

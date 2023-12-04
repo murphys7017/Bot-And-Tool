@@ -40,19 +40,12 @@ class MessageAdapter(object):
             return False
         
         return True
-    def process_2_output(self, statements):
+    def process_2_output(self, statement):
         import random
         """
         将statement转化为外部需要的形式
         """
-        res = None
-        if statements[0].type_of == 'Q':
-           
-            res = random.choice(statements.predict_statements)
-        # TODO: 对话型整体搜索都需要反馈修改
-        elif statements[0].type_of == 'CHAT':
-            res = statements[-2]
-        return res.text
+        return statement.text
 
     def process(self, message, **kwargs):
         """

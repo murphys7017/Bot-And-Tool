@@ -65,17 +65,19 @@ class FaissSearch(SearchAdapter):
             file.close()
         faiss.write_index(self.index,self.index_path)
     @get_time
+    def get_endcode_time(self,sentences):
+        return self.vector_model.encode(sentences)
+    @get_time
     def search(self,input_statement):
         input_statement_list = []
         sentences = [input_statement.text]
-        sentence_embeddings = self.vector_model.encode(sentences)
+        sentence_embeddings = self.get_endcode_time(sentences)
         result = self.index.search(sentence_embeddings,self.topk)
         result = result[1][0]
         for input_statement_id in result:
             statement = self.matchsys.storage.get_statement_by_id(int(input_statement_id))
             # statement = self.matchsys.storage.model_to_object(statement)
             input_statement_list.append(statement)
-        print(input_statement_list)
         return input_statement_list
     
     def add_to_index(self,statements,save=False):
