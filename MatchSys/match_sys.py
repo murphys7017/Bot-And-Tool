@@ -166,7 +166,7 @@ class MatchSys(object):
             if messageadapter.check(message):
                 return messageadapter
         return None
-    @get_time
+    
     def get_response(self, message=None, **kwargs):
         
         """
@@ -270,8 +270,8 @@ class MatchSys(object):
             statement (_type_): _description_
         """
         pass
+    @get_time
     def build_statement_chain(self, statements):
-        print("search statements:")
         all_result = []
 
         for statement in statements:

@@ -94,3 +94,4 @@ class FaissSearch(SearchAdapter):
     def train(self,**kwargs):
         data = kwargs.get('data', None)
         self.add_to_index(data,save=True)
+        faiss.write_index(self.index,self.index_path)

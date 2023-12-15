@@ -116,6 +116,7 @@ class SQLStorageAdapter(StorageAdapter):
         query = session.query(Statement).filter_by(id=id).all()
         session.close()
         return query
+
     def get_statements_by_previous_id(self, id):
         Statement = self.get_model('statement')
         session = self.Session()
