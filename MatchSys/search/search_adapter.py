@@ -11,7 +11,7 @@ class SearchAdapter(Adapter):
         self.matchsys = matchsys
         # 对话CHAT类型上下文长度 5 句，问答类型QA 只有多个回答，任务TASK类型追溯整个对话
         self.history_length = kwargs.get('history_length', 5)
-    def train(self,):
+    def train(self,**kwargs):
         pass
     def search(self,input_statement):
         pass

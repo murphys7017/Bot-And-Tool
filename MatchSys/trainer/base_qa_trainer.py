@@ -7,8 +7,23 @@ class QATrainer(Trainer):
     Allows a chat bot to be trained using a list of strings
     where the list represents a conversation.
     """
-
-    def train(self, conversation, **kwargs):
+    def build_line_relations(self, statements):
+        pass
+        # statements[0].next_id = statements[1].id
+        # for i in range(1,len(statements)-1):
+        #     statements[i].previous_id = statements[i-1].id
+        #     statements[i].next_id = statements[i+1].id
+        # statements[len(statements)-1].previous_id = statements[len(statements)-2].id
+        # return statements
+    def preprocessed(self,conversation,**kwargs):
+        """
+        type_of: string 
+            type of conversation : CHAT QA COMMAND MISSION
+        persona: string
+            *[all] botName[指定bot] userName[指定user]
+        [[],[],...]
+        preproces data to statements[Statement]
+        """
         """
         {Q:[A1,A2...]}
         Train the chat bot based on the provided list of
@@ -33,12 +48,4 @@ class QATrainer(Trainer):
                 'QA Trainer',
                 index + 1, len(conversation)
             )
-
-        self.matchsys.storage.create_many(statements_to_create)
-
-        for search_adapter in self.matchsys.search_adapters:
-            if search_adapter.need_train:
-                try:
-                    search_adapter.train()
-                except Exception as e:
-                    print(e)
+        return statements_to_create

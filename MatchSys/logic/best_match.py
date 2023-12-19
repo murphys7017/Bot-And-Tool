@@ -1,3 +1,4 @@
+import random
 from ..comparisons import LevenshteinDistance
 from .logic_adapter import LogicAdapter
 
@@ -37,13 +38,25 @@ class BestMatch(LogicAdapter):
     def process(self, search_results):
         response = None
         similarity_rate = 0
-        print(search_results)
         for statements in search_results:
-            per_chain = statements[0]
-            temp_similarity_rate = self.compare_history(per_chain)
-            if temp_similarity_rate > similarity_rate:
-                response = statements
-                similarity_rate = temp_similarity_rate
+            if isinstance(statements,list):
+                per_chain = statements[0:1]
+                statements = statements[1:]
+                temp_similarity_rate = self.compare_history(per_chain)
+                if temp_similarity_rate > similarity_rate:
+                    response = random.choice(statements)
+                    similarity_rate = temp_similarity_rate
+            else:
+                per_chain = statements[0]
+                temp_similarity_rate = self.compare_history(per_chain)
+                if temp_similarity_rate > similarity_rate:
+                    if len(statements[1]) >=2:
+                        response = statements[1][-2]
+                    elif len(statements[1]) == 1:
+                        response = statements[1][0]
+                    else:
+                        print("Not enough statements")
+                    similarity_rate = temp_similarity_rate
         if similarity_rate < self.min_confidence:
             response.text = '[小于最小置信度]' + response.text
         return similarity_rate, response

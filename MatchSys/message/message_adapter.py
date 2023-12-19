@@ -19,9 +19,10 @@ class MessageAdapter(object):
         for preprocessor in preprocessors:
             self.preprocessors.append(import_module(preprocessor))
         
-
+        self.need_ltp = kwargs.get('need_ltp', True)
         self.ltp = kwargs.get('ltp', None)
-        if self.ltp is None:
+
+        if self.ltp is None and self.need_ltp:
             print('ltp not found')
             from ltp import LTP
             ltp_model_path = kwargs.get('ltp_model_path', 'LTP/small')
@@ -39,19 +40,12 @@ class MessageAdapter(object):
             return False
         
         return True
-    def process_2_output(self, statements):
+    def process_2_output(self, statement):
         import random
         """
         将statement转化为外部需要的形式
         """
-        res = None
-        if statements[0].type_of == 'Q':
-           
-            res = random.choice(statements.predict_statements)
-        # TODO: 对话型整体搜索都需要反馈修改
-        elif statements[0].type_of == 'CHAT':
-            res = statements[-2]
-        return res.text
+        return statement.text
 
     def process(self, message, **kwargs):
         """
@@ -92,20 +86,21 @@ class MessageAdapter(object):
         kwargs['id'] = self.snowflake.get_id()
 
         kwargs['text'] = text[0]
-        # 分词
-        result = self.ltp.pipeline(text[0], tasks=["cws","srl"])
+        if self.need_ltp:
+            # 分词
+            result = self.ltp.pipeline(text[0], tasks=["cws","srl"])
 
-        kwargs['search_text'] = ' '.join(result.cws)
-        semantics = []
-        if len(result.srl) > 0:
-            for item in result.srl:
-                temp = {}
-                temp['id'] = self.snowflake.get_id()
-                temp['predicate'] = item['predicate']
-                for arg in item['arguments']:
-                    temp[arg[0]] = arg[1]
-                semantics.append(Semantic(**temp)) 
-        kwargs['semantics'] = semantics
+            kwargs['search_text'] = ' '.join(result.cws)
+            semantics = []
+            if len(result.srl) > 0:
+                for item in result.srl:
+                    temp = {}
+                    temp['id'] = self.snowflake.get_id()
+                    temp['predicate'] = item['predicate']
+                    for arg in item['arguments']:
+                        temp[arg[0]] = arg[1]
+                    semantics.append(Semantic(**temp)) 
+            kwargs['semantics'] = semantics
         input_statement = Statement(**kwargs)
         return input_statement
     def text_process_list(self, text_list,**kwargs):
@@ -126,39 +121,39 @@ class MessageAdapter(object):
                 text = preprocessor(text)
 
             text = text.split('.{')
-            temp = kwargs
+            temp = kwargs.copy()
+            
             if len(text) > 1:
                 args = text[1][:-1].split(',')
                 for arg in args:
                     arg = arg.split('=')
                     if len(arg) == 2:
                         temp[arg[0]] = arg[1]
+            temp['id'] = self.snowflake.get_id()
+            temp['text'] = text[0]
             input_texts.append(text[0])
             kwargs_list.append(temp)
         input_statements = []
-
-        results = self.ltp.pipeline(input_texts, tasks=["cws","srl"])
-
-        for cws,srl,input_text,kwargs_ in  zip(results.cws,results.srl,input_texts,kwargs_list):
-            kwargs_['id'] = self.snowflake.get_id()
-
-            kwargs_['text'] = input_text
-
-            kwargs_['search_text'] = ' '.join(cws)
-
-            semantics = []
-            if len(srl) > 0:
-                t = srl[0]
-                for item in srl:
-                    temp = {}
-                    temp['id'] = self.snowflake.get_id()
-                    temp['predicate'] = item['predicate']
-                    for arg in item['arguments']:
-                        temp[arg[0]] = arg[1]
-                    semantics.append(Semantic(**temp))
-            kwargs_['semantics'] = semantics
-    
-            input_statements.append(Statement(**kwargs_))
+        if self.need_ltp:
+            results = self.ltp.pipeline(input_texts, tasks=["cws","srl"])
+            for cws,srl,kwargs_ in  zip(results.cws,results.srl,kwargs_list):
+                kwargs_['search_text'] = ' '.join(cws)
+                semantics = []
+                if len(srl) > 0:
+                    t = srl[0]
+                    for item in srl:
+                        temp = {}
+                        temp['id'] = self.snowflake.get_id()
+                        temp['predicate'] = item['predicate']
+                        for arg in item['arguments']:
+                            temp[arg[0]] = arg[1]
+                        semantics.append(Semantic(**temp))
+                kwargs_['semantics'] = semantics
+        
+                input_statements.append(Statement(**kwargs_))
+        else:
+            for kwargs_ in kwargs_list:
+                input_statements.append(Statement(**kwargs_))
         return input_statements
         
 

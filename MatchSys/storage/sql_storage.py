@@ -116,6 +116,7 @@ class SQLStorageAdapter(StorageAdapter):
         query = session.query(Statement).filter_by(id=id).all()
         session.close()
         return query
+
     def get_statements_by_previous_id(self, id):
         Statement = self.get_model('statement')
         session = self.Session()
@@ -137,9 +138,13 @@ class SQLStorageAdapter(StorageAdapter):
     def get_all_statements(self):
         Statement = self.get_model('statement')
         session = self.Session()
-        query = session.query(Statement).all()
-        for statement in query:
-            yield self.model_to_object(statement)
+        query = session.query(Statement)
+
+        for start_index in range(0, query.count(), 100000):
+            for statement in query.slice(start_index, start_index + 100000):
+                yield self.model_to_object(statement)
+    
+        session.close()
     # TODO: 输入为semantic 先匹配predicate和对应元素非空的，然后根据规则返回结果
 
     def get_semantics_by_text(self, text):

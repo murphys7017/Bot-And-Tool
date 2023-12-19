@@ -84,6 +84,7 @@ class MatchSys(object):
         self.name = kwargs.get('name', 'Alice')
         self.max_time_between_conversations = kwargs.get('max_time_between_conversations',30)
         self.history_length = kwargs.get('history_length', 7)
+        self.need_ltp = kwargs.get('need_ltp',True)
 
         ltp_model_path = kwargs.get('ltp_model_path', 'LTP/small')
         message_adapter_names = kwargs.get('message_adapters', ['MatchSys.message.TextMessageAdapter'])
@@ -91,14 +92,14 @@ class MatchSys(object):
         # TODO:完善intent search
         search_adapters_name_list = kwargs.get('search_adapters_name_list', ['MatchSys.search.DocVectorSearch','MatchSys.search.TextSearch','MatchSys.search.IntentTextSearch'])
         logic_adapter_name_list = kwargs.get('logic_adapters', ['MatchSys.logic.BestMatch'])
-
-        ltp = LTP(ltp_model_path)
-        # 将模型移动到 GPU 上
-        import torch
-        if torch.cuda.is_available():
-            # ltp.cuda()
-            ltp.to("cuda")
-        kwargs['ltp'] = ltp
+        if self.need_ltp:
+            ltp = LTP(ltp_model_path)
+            # 将模型移动到 GPU 上
+            import torch
+            if torch.cuda.is_available():
+                # ltp.cuda()
+                ltp.to("cuda")
+            kwargs['ltp'] = ltp
 
         # 初始化消息处理器
         self.message_adapters = {}
@@ -165,7 +166,7 @@ class MatchSys(object):
             if messageadapter.check(message):
                 return messageadapter
         return None
-    @get_time
+    
     def get_response(self, message=None, **kwargs):
         
         """
@@ -222,6 +223,7 @@ class MatchSys(object):
                 # self.storage.create(**response.serialize())
             # delete
             if response is not None:
+
                 res_text = message_adapter.process_2_output(response)
                 if res_text.startswith('FUNCTION:'):
                     function_name = res_text.split(':')[1]
@@ -249,7 +251,6 @@ class MatchSys(object):
         for search_adapter in  self.search_adapters:
             search_results = search_results + search_adapter.search(input_statement)
         search_results=list(set(search_results))
-
         search_results = self.build_statement_chain(search_results)
 
         # logical matching
@@ -261,7 +262,7 @@ class MatchSys(object):
                 if t_similarity_rate > similarity_rate:
                     similarity_rate = t_similarity_rate
                     response = t_response
-        return response[1]
+        return response
     
     def lean_response(self,statement):
         """排除QA型对话和Task型对话，主要学习Chat型对话，具体的触发lean_response函数的规则还没想好
@@ -269,15 +270,22 @@ class MatchSys(object):
             statement (_type_): _description_
         """
         pass
+    @get_time
     def build_statement_chain(self, statements):
         all_result = []
 
         for statement in statements:
-            next_statement = [statement]
-            per_statement = [statement]
-            while next_statement[0].next_id:
-                next_statement.insert(0, self.storage.get_statement_by_id(next_statement[0].next_id))
-            while per_statement[-1].previous_id:
-                per_statement.append(self.storage.get_statement_by_id(per_statement[-1].previous_id))
-            all_result.append((per_statement,next_statement))
+            if statement.type_of == 'Q':
+                chat_chain = [statement]
+                for res in self.storage.get_statements_by_previous_id(statement.id):
+                    chat_chain.append(res)
+                all_result.append(chat_chain)
+            else:
+                next_statement = [statement]
+                per_statement = [statement]
+                while next_statement[0].next_id:
+                    next_statement.insert(0, self.storage.get_statement_by_id(next_statement[0].next_id))
+                while per_statement[-1].previous_id:
+                    per_statement.append(self.storage.get_statement_by_id(per_statement[-1].previous_id))
+                all_result.append((per_statement,next_statement))
         return all_result
