@@ -11,7 +11,6 @@ class IndexedTextSearch(SearchAdapter):
         The maximum number of records to load into memory at a time when searching.
         Defaults to 1000
     """
-
     name = 'indexed_text_search'
 
     def __init__(self, matchsys, **kwargs):

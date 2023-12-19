@@ -6,6 +6,7 @@ import faiss
 import pickle
 import time
 class FaissSearch(SearchAdapter):
+    need_train = True
     def __init__(self,matchsys,**kwargs):
         self.matchsys = matchsys
         vector_model_path = kwargs.get('vector_model_path','data/text2vec-base-chinese')
@@ -92,6 +93,6 @@ class FaissSearch(SearchAdapter):
             self.save_vec_to_file(sentence_embeddings,ids)
         print("载入完毕，数据量", len(sentence_embeddings))
     def train(self,**kwargs):
-        data = kwargs.get('data', None)
+        data = kwargs.get('statements', None)
         self.add_to_index(data,save=True)
         faiss.write_index(self.index,self.index_path)
