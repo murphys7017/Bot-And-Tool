@@ -6,6 +6,7 @@ import faiss
 import pickle
 import time
 class FaissSearch(SearchAdapter):
+    need_train = True
     def __init__(self,matchsys,**kwargs):
         self.matchsys = matchsys
         vector_model_path = kwargs.get('vector_model_path','data/text2vec-base-chinese')
@@ -38,12 +39,13 @@ class FaissSearch(SearchAdapter):
                 self.data_process_to_file(sentences,ids)
                 self.build_hnsw()
     def save_vec_to_file(self,sentence_embeddings,ids):
-        n, d = sentence_embeddings.shape
-        sentence_embeddings_file_name = str(n)+"-"+str(d)+"-"+str(time.time())+"-vec_ids_data.pkl"
-        ads_path = os.path.abspath(os.path.join(self.base_vector_path,sentence_embeddings_file_name))
-        pickle.dump([sentence_embeddings,ids], open(ads_path, 'wb'))
-        file_size = os.path.getsize(ads_path)
-        print(sentence_embeddings_file_name + " %7.3f MB" % (file_size/1024/1024))
+        if len(sentence_embeddings) > 0 and len(ids) > 0:
+            n, d = sentence_embeddings.shape
+            sentence_embeddings_file_name = str(n)+"-"+str(d)+"-"+str(time.time())+"-vec_ids_data.pkl"
+            ads_path = os.path.abspath(os.path.join(self.base_vector_path,sentence_embeddings_file_name))
+            pickle.dump([sentence_embeddings,ids], open(ads_path, 'wb'))
+            file_size = os.path.getsize(ads_path)
+            print(sentence_embeddings_file_name + " %7.3f MB" % (file_size/1024/1024))
     def data_process_to_file(self,sentences,ids):
         ids = np.array(ids)
         # 加载模型，将数据进行向量化处理
@@ -92,6 +94,6 @@ class FaissSearch(SearchAdapter):
             self.save_vec_to_file(sentence_embeddings,ids)
         print("载入完毕，数据量", len(sentence_embeddings))
     def train(self,**kwargs):
-        data = kwargs.get('data', None)
+        data = kwargs.get('statements', None)
         self.add_to_index(data,save=True)
         faiss.write_index(self.index,self.index_path)

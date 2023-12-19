@@ -47,10 +47,15 @@ class BestMatch(LogicAdapter):
                     response = random.choice(statements)
                     similarity_rate = temp_similarity_rate
             else:
-                per_chain = statements[1]
+                per_chain = statements[0]
                 temp_similarity_rate = self.compare_history(per_chain)
                 if temp_similarity_rate > similarity_rate:
-                    response = statements[0][-1]
+                    if len(statements[1]) >=2:
+                        response = statements[1][-2]
+                    elif len(statements[1]) == 1:
+                        response = statements[1][0]
+                    else:
+                        print("Not enough statements")
                     similarity_rate = temp_similarity_rate
         if similarity_rate < self.min_confidence:
             response.text = '[小于最小置信度]' + response.text

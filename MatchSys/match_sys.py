@@ -223,7 +223,7 @@ class MatchSys(object):
                 # self.storage.create(**response.serialize())
             # delete
             if response is not None:
-                print(response)
+
                 res_text = message_adapter.process_2_output(response)
                 if res_text.startswith('FUNCTION:'):
                     function_name = res_text.split(':')[1]
